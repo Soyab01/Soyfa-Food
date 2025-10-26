@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie World - Customer</title>
+    <!-- Firebase SDKs - Using v8 CDN for standalone JS -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Google Fonts for icons (using Material Symbols) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        /* Base Styles and Variables */
+        :root {
+            --primary-color: #ff6347; /* Tomato */
+            --secondary-color: #4a4a4a;
+            --background-color: #f8f8f8;
+            --card-background: #fff;
+            --text-color: #2c3e50;
+            --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.05);
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 60px; /* Space for bottom nav */
+        }
+
+        /* Utility Classes */
+        .container {
+            width: 100%;
+            max-width: 600px; /* Mobile-first approach */
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.1s;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #e55337;
+        }
+
+        .btn-secondary {
+            background-color: #ccc;
+            color: var(--text-color);
+        }
+
+        .card {
+            background-color: var(--card-background);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            overflow: hidden;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="tel"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            padding-left: 5px;
+        }
+
+        /* Login/Signup Screen */
+        #auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background-color);
+        }
+
+        .auth-form {
+            width: 90%;
+            max-width: 380px;
+        }
+
+        .auth-form h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .toggle-auth a {
+            color: var(--primary-color);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Main App Screens */
+        #app-screen {
+            display: none;
+        }
+
+        .panel-section {
+            display: none;
+        }
+
+        .panel-section.active {
+            display: block;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--card-background);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            text-align: center;
+            text-decoration: none;
+            color: var(--secondary-color);
+            flex: 1;
+            padding: 5px 0;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item span {
+            display: block;
+            font-size: 0.75em;
+            margin-top: 2px;
+        }
+
+        .nav-item .material-symbols-outlined {
+            font-size: 24px;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Home (Restaurant List) */
+        .restaurant-card {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .restaurant-card-info {
+            flex-grow: 1;
+        }
+
+        .restaurant-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .restaurant-card p {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        /* Menu View */
+        #menu-view {
+            padding-top: 15px;
+        }
+
+        .menu-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .menu-header button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--secondary-color);
+            padding: 0 10px 0 0;
+        }
+
+        .menu-header h2 {
+            margin: 0;
+        }
+
+        .menu-item-card {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            align-items: center;
+        }
+
+        .menu-item-card:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item-info {
+            flex-grow: 1;
+        }
+
+        .menu-item-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-left: 10px;
+        }
+
+        .menu-item-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .add-to-cart-btn {
+            background-color: var(--success-color);
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        /* Cart/Checkout */
+        .cart-summary {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .cart-item-controls button {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin: 0 5px;
+            font-size: 1.1em;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .total-row {
+            font-size: 1.2em;
+            font-weight: bold;
+            border-top: 2px dashed #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        /* Order Tracking */
+        .order-card {
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-card-header h4 {
+            color: var(--primary-color);
+        }
+
+        .status-tracker {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .status-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            color: #777;
+        }
+
+        .status-step.active {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 8px;
+        }
+
+        .status-step.active .status-dot {
+            background-color: var(--success-color);
+        }
+
+        .delivery-info {
+            border-top: 1px dashed #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        /* Profile */
+        .profile-info p {
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+
+        .review-form textarea {
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Firebase Configuration and Logic -->
+    <script>
+        // --- UPDATED FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyACNrzJgRGKmn8JsRuS_2b7RecPIfahTvQ",
+  authDomain: "singup-aec8c.firebaseapp.com",
+  databaseURL: "https://singup-aec8c-default-rtdb.firebaseio.com",
+  projectId: "singup-aec8c",
+  storageBucket: "singup-aec8c.appspot.com",
+  messagingSenderId: "619246550282",
+  appId: "1:619246550282:web:ab0bb54003d529ca820ef3",
+  measurementId: "G-5KYVBVXQZP"
+};
+        // --------------------------------------------------------
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentCustomer = null;
+        let cart = {}; // { itemId: { item, quantity, restaurantId } }
+        let currentRestaurantId = null; // ID of the restaurant whose menu is currently being viewed
+
+        const ORDER_STATUS_STEPS = ["PLACED", "ACCEPTED", "PREPARING", "READY_FOR_PICKUP", "PICKED_UP", "OUT_FOR_DELIVERY", "DELIVERED"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auth Form Handlers
+            document.getElementById('auth-form').addEventListener('submit', handleAuth);
+            document.getElementById('toggle-link').addEventListener('click', toggleAuthMode);
+
+            // Nav Handlers
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const sectionId = item.getAttribute('data-section');
+                    showSection(sectionId);
+                });
+            });
+
+            // Profile Handlers
+            document.getElementById('profile-edit-btn').addEventListener('click', toggleProfileEdit);
+            document.getElementById('profile-save-btn').addEventListener('click', saveProfile);
+            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+
+            // Checkout Handlers
+            document.getElementById('place-order-btn').addEventListener('click', placeOrder);
+        });
+
+        // --- AUTHENTICATION FLOW ---
+
+        let isSignUpMode = false;
+
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').textContent = isSignUpMode ? 'Customer Sign Up' : 'Customer Login';
+            document.getElementById('auth-submit-btn').textContent = isSignUpMode ? 'SIGN UP' : 'LOGIN';
+            document.getElementById('toggle-link').textContent = isSignUpMode ? 'Already have an account? Login' : 'Need an account? Sign Up';
+            // Show/hide name/phone/address fields for signup
+            document.getElementById('signup-fields').style.display = isSignUpMode ? 'block' : 'none';
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.textContent = '';
+
+            if (isSignUpMode) {
+                const name = e.target.name.value;
+                const phone = e.target.phone.value;
+                const address = e.target.address.value;
+
+                if (!name || !phone || !address) {
+                    errorDiv.textContent = 'Please fill in all details for sign up.';
+                    return;
+                }
+
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Create customer record
+                        return db.ref('customers/' + userCredential.user.uid).set({
+                            email: email,
+                            name: name,
+                            phone: phone,
+                            address: address,
+                            createdAt: new Date().toISOString()
+                        });
+                    })
+                    .catch(error => {
+                        errorDiv.textContent = 'Sign up failed: ' + error.message;
+                    });
+            } else {
+                auth.signInWithEmailAndPassword(email, password)
+                    .catch(error => {
+                        errorDiv.textContent = 'Login failed: ' + error.message;
+                    });
+            }
+        }
+
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Check if user has a customer record (essential for security and role isolation)
+                db.ref('customers/' + user.uid).once('value')
+                    .then(snapshot => {
+                        if (snapshot.exists()) {
+                            currentCustomer = snapshot.val();
+                            document.getElementById('auth-screen').style.display = 'none';
+                            document.getElementById('app-screen').style.display = 'block';
+                            loadCustomerData(user.uid);
+                            showSection('home');
+                        } else {
+                            // Signed in but not a Customer (e.g., trying to access with an admin/restaurant account)
+                            alert('Access Denied: Your account is not registered as a Customer.');
+                            auth.signOut();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('DB check failed:', error);
+                        auth.signOut();
+                    });
+            } else {
+                // User is signed out.
+                currentCustomer = null;
+                cart = {};
+                document.getElementById('app-screen').style.display = 'none';
+                document.getElementById('auth-screen').style.display = 'flex';
+                // Reset to login view
+                if (isSignUpMode) toggleAuthMode();
+            }
+        });
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.panel-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId + '-section').classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === sectionId) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Specific logic for sections
+            if (sectionId === 'home') {
+                loadRestaurants();
+                document.getElementById('menu-view').style.display = 'none';
+                document.getElementById('restaurant-list').style.display = 'block';
+            } else if (sectionId === 'orders') {
+                loadOrders();
+            } else if (sectionId === 'profile') {
+                displayProfile();
+            }
+        }
+
+        // --- PROFILE LOGIC ---
+
+        function loadCustomerData(uid) {
+            db.ref('customers/' + uid).on('value', snapshot => {
+                if (snapshot.exists()) {
+                    currentCustomer = snapshot.val();
+                    displayProfile();
+                }
+            });
+        }
+
+        function displayProfile() {
+            if (!currentCustomer) return;
+
+            document.getElementById('profile-name-view').textContent = currentCustomer.name || 'N/A';
+            document.getElementById('profile-email-view').textContent = currentCustomer.email || 'N/A';
+            document.getElementById('profile-phone-view').textContent = currentCustomer.phone || 'N/A';
+            document.getElementById('profile-address-view').textContent = currentCustomer.address || 'N/A';
+
+            // Set edit form values
+            document.getElementById('profile-name-edit').value = currentCustomer.name || '';
+            document.getElementById('profile-phone-edit').value = currentCustomer.phone || '';
+            document.getElementById('profile-address-edit').value = currentCustomer.address || '';
+        }
+
+        function toggleProfileEdit() {
+            const isEditing = document.getElementById('profile-view').style.display !== 'none';
+            document.getElementById('profile-view').style.display = isEditing ? 'none' : 'block';
+            document.getElementById('profile-edit').style.display = isEditing ? 'block' : 'none';
+            document.getElementById('profile-edit-btn').style.display = isEditing ? 'none' : 'block';
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('profile-name-edit').value;
+            const phone = document.getElementById('profile-phone-edit').value;
+            const address = document.getElementById('profile-address-edit').value;
+            const uid = auth.currentUser.uid;
+
+            if (!name || !phone || !address) {
+                alert('All profile fields are required.');
+                return;
+            }
+
+            db.ref('customers/' + uid).update({ name, phone, address })
+                .then(() => {
+                    alert('Profile updated successfully!');
+                    toggleProfileEdit(); // Switch back to view mode
+                })
+                .catch(error => {
+                    console.error('Error updating profile:', error);
+                    alert('Failed to update profile.');
+                });
+        }
+
+        // --- HOME/BROWSE LOGIC ---
+
+        function loadRestaurants() {
+            db.ref('restaurants').orderByChild('approved').equalTo(true).once('value', snapshot => {
+                const listDiv = document.getElementById('restaurant-list');
+                listDiv.innerHTML = '<h2>Browse Restaurants</h2>';
+
+                if (!snapshot.exists()) {
+                    listDiv.innerHTML += '<p style="text-align: center; padding: 20px;">No approved restaurants found yet.</p>';
+                    return;
+                }
+
+                snapshot.forEach(childSnapshot => {
+                    const restaurant = childSnapshot.val();
+                    const rid = childSnapshot.key;
+                    listDiv.innerHTML += `
+                        <div class="card restaurant-card" onclick="viewMenu('${rid}', '${restaurant.name}')">
+                            <div class="restaurant-card-info">
+                                <h3>${restaurant.name}</h3>
+                                <p>${restaurant.cuisine || 'Mixed Cuisine'} - ${restaurant.address}</p>
+                            </div>
+                            <span class="material-symbols-outlined" style="color: var(--primary-color);">chevron_right</span>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function viewMenu(restaurantId, restaurantName) {
+            currentRestaurantId = restaurantId;
+            document.getElementById('menu-restaurant-name').textContent = restaurantName;
+            document.getElementById('restaurant-list').style.display = 'none';
+            document.getElementById('menu-view').style.display = 'block';
+
+            loadMenuItems(restaurantId);
+        }
+
+        function backToRestaurants() {
+            currentRestaurantId = null;
+            document.getElementById('menu-view').style.display = 'none';
+            document.getElementById('restaurant-list').style.display = 'block';
+        }
+
+        function loadMenuItems(restaurantId) {
+            db.ref(`menus/${restaurantId}`).on('value', snapshot => {
+                const menuDiv = document.getElementById('menu-items');
+                menuDiv.innerHTML = '';
+                const items = snapshot.val() || {};
+
+                Object.entries(items).forEach(([itemId, item]) => {
+                    if (item.available) {
+                        const quantity = cart[itemId] ? cart[itemId].quantity : 0;
+                        menuDiv.innerHTML += `
+                            <div class="menu-item-card">
+                                <div class="menu-item-info">
+                                    <h4>${item.name} (₹${item.price.toFixed(2)})</h4>
+                                    <p style="font-size: 0.85em; color: #777;">${item.description}</p>
+                                </div>
+                                <img src="${item.imageUrl || 'https://via.placeholder.com/80?text=Food'}" alt="${item.name}" class="menu-item-img">
+                                <div class="menu-item-actions">
+                                    <button class="add-to-cart-btn" onclick="addToCart('${itemId}', '${restaurantId}', '${item.name}', ${item.price}, '${item.imageUrl}')">
+                                        ${quantity > 0 ? quantity + ' In Cart' : 'Add to Cart'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                updateCartUI(); // Update cart visibility
+            });
+        }
+
+        // --- CART LOGIC ---
+
+        function addToCart(itemId, restaurantId, name, price, imageUrl) {
+            if (Object.keys(cart).length > 0 && cart[Object.keys(cart)[0]].restaurantId !== restaurantId) {
+                if (!confirm('Adding items from a new restaurant will clear your current cart. Continue?')) {
+                    return;
+                }
+                cart = {}; // Clear cart
+            }
+
+            if (!cart[itemId]) {
+                cart[itemId] = { item: { name, price, imageUrl, itemId }, quantity: 1, restaurantId };
+            } else {
+                cart[itemId].quantity++;
+            }
+            loadMenuItems(currentRestaurantId); // Reload menu for button update
+            updateCartUI();
+        }
+
+        function updateCartQuantity(itemId, change) {
+            if (cart[itemId]) {
+                cart[itemId].quantity += change;
+                if (cart[itemId].quantity <= 0) {
+                    delete cart[itemId];
+                }
+            }
+            if (currentRestaurantId) loadMenuItems(currentRestaurantId); // Update item button on menu
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartDiv = document.getElementById('cart-summary');
+            const cartItemsDiv = document.getElementById('cart-items');
+            const totalDiv = document.getElementById('cart-total');
+            const checkoutHeader = document.getElementById('checkout-header');
+
+            if (Object.keys(cart).length === 0) {
+                cartDiv.style.display = 'none';
+                return;
+            }
+
+            cartDiv.style.display = 'block';
+            cartItemsDiv.innerHTML = '';
+            let totalAmount = 0;
+
+            const firstItem = cart[Object.keys(cart)[0]];
+            const cartRestaurantId = firstItem.restaurantId;
+
+            // Fetch restaurant name for checkout header
+            db.ref(`restaurants/${cartRestaurantId}/name`).once('value', snapshot => {
+                checkoutHeader.textContent = `Checkout for ${snapshot.val() || 'Restaurant'}`;
+            });
+
+            Object.entries(cart).forEach(([itemId, itemData]) => {
+                const subtotal = itemData.item.price * itemData.quantity;
+                totalAmount += subtotal;
+
+                cartItemsDiv.innerHTML += `
+                    <div class="cart-item">
+                        <span>${itemData.item.name} (x${itemData.quantity})</span>
+                        <div class="cart-item-controls">
+                            <button onclick="updateCartQuantity('${itemId}', -1)">-</button>
+                            <span style="min-width: 20px; text-align: center;">${itemData.quantity}</span>
+                            <button onclick="updateCartQuantity('${itemId}', 1)">+</button>
+                            <span style="min-width: 60px; text-align: right;">₹${subtotal.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            totalDiv.textContent = `₹${totalAmount.toFixed(2)}`;
+            document.getElementById('place-order-btn').disabled = totalAmount <= 0;
+        }
+
+        // --- CHECKOUT/ORDER LOGIC ---
+
+        function placeOrder() {
+            if (Object.keys(cart).length === 0 || !currentCustomer) return alert('Cart is empty or customer data is missing.');
+
+            if (!confirm(`Confirm order for ₹${document.getElementById('cart-total').textContent.substring(1)}? Payment is Cash on Delivery.`)) {
+                return;
+            }
+
+            const cartItems = Object.entries(cart).map(([itemId, itemData]) => ({
+                itemId: itemId,
+                name: itemData.item.name,
+                price: itemData.item.price,
+                quantity: itemData.item.quantity,
+                imageUrl: itemData.item.imageUrl
+            }));
+
+            const orderData = {
+                customerUid: auth.currentUser.uid,
+                restaurantId: cart[Object.keys(cart)[0]].restaurantId,
+                deliveryUid: null, // Will be assigned by Admin/Restaurant
+                items: cartItems,
+                totalAmount: parseFloat(document.getElementById('cart-total').textContent.substring(1)),
+                address: currentCustomer.address,
+                phone: currentCustomer.phone,
+                status: "PLACED",
+                paymentMethod: "COD",
+                locationLink: "",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            const newOrderRef = db.ref('orders').push();
+            newOrderRef.set(orderData)
+                .then(() => {
+                    alert('Order placed successfully! Tracking started.');
+                    cart = {}; // Clear cart
+                    if (currentRestaurantId) loadMenuItems(currentRestaurantId); // Reload menu to update buttons
+                    updateCartUI();
+                    showSection('orders'); // Go to orders page
+                })
+                .catch(error => {
+                    console.error('Error placing order:', error);
+                    alert('Failed to place order. Please try again.');
+                });
+        }
+
+        // --- ORDERS LOGIC ---
+
+        function loadOrders() {
+            const customerUid = auth.currentUser.uid;
+            db.ref('orders').orderByChild('customerUid').equalTo(customerUid).on('value', async snapshot => {
+                const ordersDiv = document.getElementById('orders-list');
+                ordersDiv.innerHTML = '';
+                const orders = snapshot.val() || {};
+                const orderKeys = Object.keys(orders).reverse(); // Latest first
+
+                if (orderKeys.length === 0) {
+                    ordersDiv.innerHTML = '<p style="text-align: center; padding: 20px;">You have not placed any orders yet.</p>';
+                    return;
+                }
+
+                // Fetch all restaurant and delivery partner names in one go for efficiency
+                const restaurantSnapshots = await db.ref('restaurants').once('value');
+                const restaurants = restaurantSnapshots.val() || {};
+                const partnerSnapshots = await db.ref('deliveryPartners').once('value');
+                const partners = partnerSnapshots.val() || {};
+
+                orderKeys.forEach(orderId => {
+                    const order = orders[orderId];
+                    const restaurantName = restaurants[order.restaurantId]?.name || 'Unknown Restaurant';
+                    const deliveryPartner = order.deliveryUid ? partners[order.deliveryUid]?.name || order.deliveryUid.substring(0, 8) : 'Not Assigned';
+
+                    ordersDiv.innerHTML += createOrderCard(order, orderId, restaurantName, deliveryPartner);
+                });
+            });
+        }
+
+        function createOrderCard(order, orderId, restaurantName, deliveryPartner) {
+            const statusIndex = ORDER_STATUS_STEPS.indexOf(order.status);
+            const statusStepsHtml = ORDER_STATUS_STEPS.map((step, index) => {
+                const isActive = index <= statusIndex;
+                if (index > ORDER_STATUS_STEPS.indexOf("DELIVERED") && order.status === "CANCELLED") return ''; // Skip if cancelled
+
+                return `
+                    <div class="status-step ${isActive ? 'active' : ''}">
+                        <span class="status-dot"></span>
+                        <span>${step.replace(/_/g, ' ')}</span>
+                    </div>
+                `;
+            }).join('');
+
+            const deliveryInfoHtml = (order.deliveryUid && statusIndex >= ORDER_STATUS_STEPS.indexOf("PICKED_UP")) ? `
+                <div class="delivery-info">
+                    <strong>Delivery Boy:</strong> ${deliveryPartner}
+                    <p style="margin-top: 5px;">
+                        ${order.locationLink ? `<a href="${order.locationLink}" target="_blank" style="color: var(--primary-color);">Live Location Link</a>` : 'Location not shared yet.'}
+                    </p>
+                </div>
+            ` : '';
+
+            const itemsHtml = order.items.map(item => `
+                <p style="font-size: 0.9em; margin-left: 10px;">- ${item.name} x ${item.quantity} (@ ₹${item.price.toFixed(2)})</p>
+            `).join('');
+
+            const isDeliveredOrCancelled = order.status === 'DELIVERED' || order.status === 'CANCELLED';
+            const reviewButtonHtml = order.status === 'DELIVERED' ? `
+                <button class="btn btn-secondary" onclick="openReviewModal('${orderId}', '${order.restaurantId}', '${restaurantName}')" style="margin-top: 10px; width: auto;">Rate & Review</button>
+            ` : '';
+            const reorderButtonHtml = isDeliveredOrCancelled ? `
+                <button class="btn btn-primary" onclick="reorderItems('${orderId}')" style="margin-top: 10px; width: auto; margin-left: 10px; background-color: #3498db;">Reorder</button>
+            ` : '';
+
+            return `
+                <div class="card order-card">
+                    <div class="order-card-header">
+                        <h4>Order ID: ${orderId.substring(0, 8)} - ${restaurantName}</h4>
+                        <span style="font-weight: bold;">₹${order.totalAmount.toFixed(2)}</span>
+                    </div>
+                    <p style="font-size: 0.85em; color: var(--primary-color); margin-bottom: 10px;">Status: ${order.status}</p>
+
+                    ${itemsHtml}
+
+                    <div class="status-tracker">
+                        ${statusStepsHtml}
+                    </div>
+
+                    ${deliveryInfoHtml}
+                    ${reviewButtonHtml}
+                    ${reorderButtonHtml}
+                </div>
+            `;
+        }
+
+        function reorderItems(orderId) {
+            db.ref(`orders/${orderId}`).once('value', snapshot => {
+                const order = snapshot.val();
+                if (!order || !order.items || order.items.length === 0) return alert('Could not find order items.');
+
+                // Clear current cart and add reorder items
+                cart = {};
+                order.items.forEach(item => {
+                    cart[item.itemId] = {
+                        item: {
+                            name: item.name,
+                            price: item.price,
+                            imageUrl: item.imageUrl,
+                            itemId: item.itemId
+                        },
+                        quantity: item.quantity,
+                        restaurantId: order.restaurantId
+                    };
+                });
+
+                // Navigate to the restaurant's menu view
+                db.ref(`restaurants/${order.restaurantId}/name`).once('value', rSnap => {
+                    alert(`Cart populated with items from Order ${orderId.substring(0, 8)}. Please confirm on the Checkout section.`);
+                    showSection('home');
+                    viewMenu(order.restaurantId, rSnap.val() || 'Restaurant');
+                });
+            });
+        }
+
+        // --- RATINGS & REVIEWS LOGIC ---
+
+        function openReviewModal(orderId, restaurantId, restaurantName) {
+            const reviewModal = document.getElementById('review-modal');
+            document.getElementById('review-restaurant-name').textContent = restaurantName;
+            document.getElementById('review-order-id').textContent = orderId.substring(0, 8);
+            document.getElementById('review-submit-btn').onclick = () => submitReview(orderId, restaurantId, restaurantName);
+            document.getElementById('review-modal-overlay').style.display = 'flex';
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal-overlay').style.display = 'none';
+            document.getElementById('review-rating').value = '5';
+            document.getElementById('review-comment').value = '';
+        }
+
+        function submitReview(orderId, restaurantId, restaurantName) {
+            const rating = parseInt(document.getElementById('review-rating').value);
+            const comment = document.getElementById('review-comment').value.trim();
+
+            if (!comment || rating < 1 || rating > 5) {
+                return alert('Please provide a valid rating and comment.');
+            }
+
+            const reviewData = {
+                customerUid: auth.currentUser.uid,
+                customerName: currentCustomer.name,
+                orderId: orderId,
+                rating: rating,
+                comment: comment,
+                createdAt: new Date().toISOString()
+            };
+
+            // Using /reviews/{restaurantId}/{orderId} for unique review storage per order
+            db.ref(`reviews/${restaurantId}/${orderId}`).set(reviewData)
+                .then(() => {
+                    alert(`Review for ${restaurantName} submitted successfully!`);
+                    closeReviewModal();
+                })
+                .catch(error => {
+                    console.error('Error submitting review:', error);
+                    alert('Failed to submit review.');
+                });
+        }
+    </script>
+
+    <!-- Customer Panel HTML Structure -->
+
+    <!-- 1. Authentication Screen -->
+    <div id="auth-screen">
+        <div class="auth-form">
+            <h1 id="auth-title">Customer Login</h1>
+            <form id="auth-form" class="card">
+                <input type="email" id="auth-email" placeholder="Email" required>
+                <input type="password" id="auth-password" placeholder="Password" required>
+
+                <!-- Signup Fields (Initially hidden) -->
+                <div id="signup-fields" style="display: none;">
+                    <input type="text" id="auth-name" name="name" placeholder="Full Name">
+                    <input type="tel" id="auth-phone" name="phone" placeholder="Phone Number">
+                    <textarea id="auth-address" name="address" placeholder="Delivery Address"></textarea>
+                </div>
+
+                <p id="auth-error" style="color: var(--danger-color); margin-bottom: 15px; text-align: center;"></p>
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary">LOGIN</button>
+            </form>
+            <p class="toggle-auth">
+                <a id="toggle-link">Need an account? Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- 2. Main Application Screen -->
+    <div id="app-screen">
+        <div class="container">
+
+            <!-- Home/Browse Section -->
+            <section id="home-section" class="panel-section active">
+                <!-- Restaurant List View -->
+                <div id="restaurant-list">
+                    <!-- Restaurant Cards loaded by JS -->
+                </div>
+
+                <!-- Menu and Cart/Checkout View (Initially hidden) -->
+                <div id="menu-view" style="display: none;">
+                    <div class="menu-header">
+                        <button onclick="backToRestaurants()">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <h2 id="menu-restaurant-name">Menu</h2>
+                    </div>
+
+                    <div id="menu-items">
+                        <!-- Menu Items loaded by JS -->
+                    </div>
+
+                    <!-- Cart Summary/Checkout -->
+                    <div id="cart-summary" class="card" style="display: none;">
+                        <h3 id="checkout-header" style="color: var(--secondary-color); margin-bottom: 10px;">Checkout</h3>
+                        <div id="cart-items">
+                            <!-- Cart Items loaded by JS -->
+                        </div>
+                        <div class="cart-summary total-row">
+                            <span>Total (COD Only)</span>
+                            <span id="cart-total">₹0.00</span>
+                        </div>
+                        <button id="place-order-btn" class="btn btn-primary" style="margin-top: 15px;">PLACE ORDER (COD)</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orders Tracking Section -->
+            <section id="orders-section" class="panel-section">
+                <h2>Your Orders</h2>
+                <div id="orders-list">
+                    <!-- Orders loaded by JS -->
+                </div>
+            </section>
+
+            <!-- Profile Section -->
+            <section id="profile-section" class="panel-section">
+                <h2>My Profile</h2>
+
+                <!-- View Mode -->
+                <div id="profile-view" class="card profile-info">
+                    <p><strong>Name:</strong> <span id="profile-name-view"></span></p>
+                    <p><strong>Email:</strong> <span id="profile-email-view"></span></p>
+                    <p><strong>Phone:</strong> <span id="profile-phone-view"></span></p>
+                    <p><strong>Address:</strong> <span id="profile-address-view"></span></p>
+                </div>
+
+                <!-- Edit Mode (Initially hidden) -->
+                <div id="profile-edit" class="card" style="display: none;">
+                    <input type="text" id="profile-name-edit" placeholder="Name" required>
+                    <input type="tel" id="profile-phone-edit" placeholder="Phone" required>
+                    <textarea id="profile-address-edit" placeholder="Address" required></textarea>
+                    <button id="profile-save-btn" class="btn btn-primary">Save Changes</button>
+                    <button class="btn btn-secondary" style="margin-top: 10px;" onclick="toggleProfileEdit()">Cancel</button>
+                </div>
+
+                <button id="profile-edit-btn" class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;">Edit Profile</button>
+                <button id="logout-btn" class="btn btn-danger" style="width: 100%;">LOGOUT</button>
+            </section>
+            
+            <!-- AdMob/AdSense Banner Ad Placeholder -->
+            <div id="ad-container" style="text-align: center; margin: 20px 0;">
+                <div id="ad-slot" style="width: 320px; height: 50px; background-color: #f0f0f0; border: 1px dashed #ccc; margin: 0 auto; line-height: 50px; color: #777; font-size: 0.8em;">
+                    <!-- *** PLACE YOUR AD CODE HERE *** -->
+                    AD BANNER PLACEHOLDER (320x50)
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="bottom-nav">
+            <a class="nav-item active" data-section="home">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span>Home</span>
+            </a>
+            <a class="nav-item" data-section="orders">
+                <span class="material-symbols-outlined">list_alt</span>
+                <span>Orders</span>
+            </a>
+            <a class="nav-item" data-section="profile">
+                <span class="material-symbols-outlined">person</span>
+                <span>Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Review Modal Overlay (Hidden by default) -->
+    <div id="review-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000;">
+        <div id="review-modal" class="card" style="max-width: 350px; width: 90%;">
+            <h3 style="color: var(--primary-color);">Rate <span id="review-restaurant-name"></span></h3>
+            <p style="font-size: 0.9em; margin-bottom: 15px;">Order ID: <span id="review-order-id"></span></p>
+
+            <div class="form-group">
+                <label for="review-rating">Rating (1-5):</label>
+                <select id="review-rating" style="margin-bottom: 10px;">
+                    <option value="5">5 - Excellent</option>
+                    <option value="4">4 - Good</option>
+                    <option value="3">3 - Average</option>
+                    <option value="2">2 - Poor</option>
+                    <option value="1">1 - Terrible</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="review-comment">Comment:</label>
+                <textarea id="review-comment" placeholder="Share your experience..."></textarea>
+            </div>
+
+            <button id="review-submit-btn" class="btn btn-primary">Submit Review</button>
+            <button class="btn btn-secondary" style="margin-top: 10px; background-color: var(--danger-color); color: white;" onclick="closeReviewModal()">Cancel</button>
+        </div>
+    </div>
+
+</body>
+</html>
