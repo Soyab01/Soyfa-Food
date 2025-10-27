@@ -1,25 +1,1635 @@
+--- START OF FILE customer.html ---
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Foodie World - Customer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.4.0/"
-  }
-}
-</script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soyfa Food - Customer</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        /* Mobile-First, Responsive, Modern UI */
+        :root {
+            --primary-color: #f75d5d; /* Vibrant Foodie Red/Pink */
+            --secondary-color: #555;
+            --background-color: #eef2f5; /* Light, soft background for 2D/3D feel */
+            --card-background: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Enhanced shadow for depth */
+            --text-color: #333;
+            --step-active-color: #4CAF50; /* Green for active step */
+            --step-inactive-color: #ccc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+        }
+
+        body {
+            background-color: var(--background-color);
+            line-height: 1.6;
+            padding-bottom: 60px; /* Space for bottom nav */
+        }
+
+        /* Utility Classes & Buttons */
+        .hidden { display: none !important; }
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .btn {
+            padding: 12px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(247, 93, 93, 0.4);
+        }
+        .btn-primary:hover { background-color: #e05454; }
+        .btn-secondary {
+            background-color: #eee;
+            color: var(--secondary-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .btn-small {
+            padding: 8px 12px;
+            width: auto;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin: 0;
+        }
+        /* Info Links Style (Updated to look like vertical buttons for profile) */
+        .info-link-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            text-align: left;
+            text-decoration: none;
+            font-size: 0.95em;
+            transition: background-color 0.2s;
+        }
+        .info-link-btn:hover {
+            background-color: #ffeaea;
+            border-color: var(--primary-color);
+        }
+        .info-link { /* Kept for login screen's inline links */
+            display: inline-block;
+            margin: 10px 5px;
+            font-size: 0.8em;
+            color: var(--secondary-color);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        /* Info Pages Style */
+        .info-page {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+        }
+        .info-page h3 {
+            color: var(--primary-color);
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 1.1em;
+        }
+        .info-page ul {
+            margin-left: 20px;
+            list-style-type: disc;
+        }
+        .info-page li {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .info-page p {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+
+        /* Auth/Login Screens */
+        #auth-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        /* Login Image Style */
+        #auth-image {
+            width: 90%;
+            max-width: 350px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .auth-card {
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .auth-card input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--card-background);
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            text-align: center;
+            flex-grow: 1;
+            padding: 5px;
+            cursor: pointer;
+            color: #ccc;
+            transition: color 0.3s ease;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item i {
+            display: block;
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+        
+        /* Font Awesome for Icons (Simplified with Unicode/Text for this demo) */
+        .icon::before {
+            content: "\1F3E0"; /* Home */
+            display: block;
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+        .icon-orders::before { content: "\1F6CD"; /* Shopping Bags */ }
+        .icon-profile::before { content: "\1F464"; /* Profile */ }
+
+
+        /* Content Panels */
+        .content-panel h2 {
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        /* Banner Slider */
+        #slider-wrapper {
+            overflow: hidden;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+        #banner-slider {
+            display: flex;
+            width: 300%; 
+            transition: transform 0.5s ease-in-out;
+        }
+        .banner-image {
+            width: 33.333%; 
+            height: 180px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        /* Home/Restaurant List */
+        .restaurant-card {
+            background: var(--card-background);
+            padding: 0; 
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            overflow: hidden; 
+        }
+        .restaurant-card:hover { transform: translateY(-3px); }
+        .restaurant-card-image { 
+            width: 100%;
+            height: 150px; 
+            object-fit: cover;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .restaurant-card-details {
+            padding: 15px;
+        }
+        .restaurant-card-details h3 { 
+            color: var(--primary-color); 
+            margin-bottom: 5px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .restaurant-card-details p { font-size: 0.9em; color: #777; }
+        .restaurant-card-offline {
+            background-color: #ffeaea;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .rating-chip { 
+            background-color: #4CAF50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            line-height: 1.2;
+        }
+
+
+        /* Menu View */
+        #menu-restaurant-image { 
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #menu-view h2 { text-align: center; }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-background);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+        }
+        .item-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .item-details { flex-grow: 1; }
+        .item-details h4 { margin-bottom: 3px; font-size: 1.1em; }
+        .item-details p { font-size: 0.8em; color: #777; }
+        .item-price { font-weight: bold; color: var(--primary-color); margin-top: 5px; }
+        .add-to-cart-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        /* Cart View */
+        #cart-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 1001;
+            overflow-y: auto; 
+        }
+        #cart-view .container {
+            padding-top: 20px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item-info h4 { font-size: 1em; }
+        .cart-item-controls { display: flex; align-items: center; }
+        .cart-item-controls button {
+            background: none;
+            border: 1px solid #ddd;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .checkout-summary {
+            background: #fff3f3;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+        .checkout-summary div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            line-height: 1; 
+        }
+        .checkout-summary span:first-child { flex-grow: 1; text-align: left; }
+        .checkout-summary span:last-child { flex-grow: 0; text-align: right; }
+
+        /* Profile View */
+        .profile-card {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .profile-field { 
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .profile-field-label {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        .profile-field-value {
+            color: var(--text-color);
+        }
+        #profile-edit-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        /* Orders View */
+        .order-card {
+            background: var(--card-background);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .order-status {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+            background-color: #ccc; /* Default */
+        }
+        .order-status.PLACED { background-color: #2196F3; }
+        .order-status.ACCEPTED { background-color: #FFC107; color: var(--text-color); }
+        .order-status.PREPARING { background-color: #4CAF50; }
+        .order-status.READY_FOR_PICKUP { background-color: #ff9800; }
+        .order-status.PICKED_UP, .order-status.OUT_FOR_DELIVERY { background-color: #9c27b0; }
+        .order-status.DELIVERED { background-color: #00bcd4; }
+        .order-status.CANCELLED { background-color: #f44336; }
+
+        /* Order Tracking Bar (Request 3) */
+        .tracking-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 10px 0;
+            position: relative;
+            padding: 0 10px;
+        }
+        .tracking-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            right: 15px;
+            height: 3px;
+            background: var(--step-inactive-color);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+        .tracking-step {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            color: var(--step-inactive-color);
+            transition: color 0.3s ease;
+        }
+        .tracking-icon {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background: var(--card-background);
+            border: 3px solid var(--step-inactive-color);
+            margin-bottom: 5px;
+            transition: border-color 0.3s ease, color 0.3s ease;
+            font-size: 1.2em;
+        }
+        .tracking-step.active .tracking-icon {
+            border-color: var(--step-active-color);
+            color: var(--step-active-color);
+        }
+        .tracking-step.active {
+            color: var(--text-color);
+        }
+        .tracking-step.completed .tracking-icon {
+            background: var(--step-active-color);
+            color: white;
+            border-color: var(--step-active-color);
+        }
+        
+        /* Star Rating Styles */
+        .rating-box {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .stars {
+            unicode-bidi: bidi-override;
+            direction: rtl;
+            text-align: center;
+            font-size: 24px;
+            display: inline-block;
+        }
+        .stars > input { display: none; }
+        .stars > label {
+            display: inline-block;
+            padding: 0 5px;
+            cursor: pointer;
+            color: #ccc;
+        }
+        .stars > label:hover,
+        .stars > label:hover ~ label,
+        .stars > input:checked ~ label {
+            color: gold;
+        }
+
+        .alert {
+            background-color: #f44336;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .alert-close-btn { 
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
 </head>
-  <body class="bg-gray-50">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+<body onclick="initAudioUnlock()"> <!-- Added onclick to body for robust audio unlock (Request 1) -->
+    <!-- Order Done Sound -->
+    <audio id="order-done-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3" preload="auto"></audio>
+    <!-- Click Sound (Request 2) -->
+    <audio id="click-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-sweep-transition-1065.mp3" preload="auto"></audio>
+
+    <!-- 1. Auth/Login Panel -->
+    <div id="auth-panel" class="container">
+        
+        <!-- Login Image -->
+        <img id="auth-image" src="https://t3.ftcdn.net/jpg/02/79/75/74/360_F_279757414_o2KNnB8fZ2eahIK6SqydL4tGFkO5RDH5.jpg" alt="Food Delivery Banner">
+        
+        <!-- Main Login Card -->
+        <div class="auth-card" id="auth-main-card">
+            <h2 id="auth-title">Customer Login</h2>
+            <input type="email" id="auth-email" placeholder="Email" required>
+            <input type="password" id="auth-password" placeholder="Password" required>
+            
+            <input type="text" id="auth-name" placeholder="Name" class="hidden" required>
+            <input type="text" id="auth-phone" placeholder="Phone" class="hidden" required>
+            <input type="text" id="auth-city" placeholder="City" class="hidden" required> 
+            <input type="text" id="auth-pincode" placeholder="Pincode" class="hidden" required> 
+            <input type="text" id="auth-address" placeholder="Address (Optional)" class="hidden">
+            
+            <button class="btn btn-primary" id="auth-action-btn" onclick="playClickSound(); handleAuth();">Login</button>
+            <p id="auth-error" style="color: var(--primary-color); margin-top: 15px;" class="hidden"></p>
+            <button class="btn btn-secondary" onclick="playClickSound(); toggleAuthMode();">Switch to Sign Up</button>
+
+             <div style="margin-top: 20px; text-align: center;">
+                <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('about-page');">About</a> | 
+                <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('privacy-page');">Privacy Policy</a> | 
+                <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('terms-page');">Terms & Conditions</a>
+            </div>
+        </div>
+
+        <!-- Info Pages (Kept here for single-page toggling) -->
+        <div id="about-page" class="info-page hidden">
+            <h2 style="color: var(--primary-color);">About Soyfa Food</h2>
+            <p>Welcome to *Soyfa Food*, your local food delivery partner in Ladnun City.</p>
+            <p>We bring your favorite food from nearby restaurants, hotels, and food stalls straight to your doorstep — fresh, fast, and affordable.</p>
+            <p>Soyfa Food is a private app created to make food ordering simple for local people. We focus on providing fast delivery, live order tracking, and genuine restaurant listings.</p>
+            <p>Our goal is to support local food businesses and provide customers with a smooth food delivery experience.</p>
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+        </div>
+
+        <div id="privacy-page" class="info-page hidden">
+            <h2 style="color: var(--primary-color);">Privacy Policy for Soyfa Food</h2>
+            <p>Effective date: [24 10, 2025]</p>
+            <p>Contact: soyfafood@gmail.com</p>
+
+            <h3>Introduction</h3>
+            <p>Soyfa Food (“we”, “our”, “us”) respects your privacy. This policy explains what information we collect, why we collect it, how we use it, and how you can contact us.</p>
+
+            <h3>Information we collect</h3>
+            <p>We collect the minimum necessary information to provide delivery services:</p>
+            <ul>
+                <li>Personal info: Name, phone number, email (if provided).</li>
+                <li>Delivery info: Delivery address, landmark, preferred contact person, City, Pincode.</li>
+                <li>Order info: Items ordered, price, order time, special instructions.</li>
+                <li>Payment info: If you use in-app online payment, we use third-party payment gateway — we do not store full card details on our servers.</li>
+                <li>Device & usage: App version, device model, basic analytics to improve service (only if you permit).</li>
+                <li>Location: If you enable live location for delivery, we access approximate/current location solely to complete the delivery.</li>
+            </ul>
+
+            <h3>Why we collect it (Purpose)</h3>
+            <p>To process and deliver orders. To contact you about order status (calls/SMS/push). For payments and refunds (through payment providers). To improve app functionality and fix bugs (analytics; anonymized preferred).</p>
+
+            <h3>Sharing & third parties</h3>
+            <p>We do not sell your personal data. We may share minimal data with: restaurants (to prepare orders), delivery partners (for delivery), payment processors (for payments), and legal authorities when required by law. Third parties (e.g., payment gateways) have their own privacy policies — you should review them.</p>
+
+            <h3>Security & retention</h3>
+            <p>We take reasonable security measures to protect data (access controls, secure servers). We retain personal data only as long as needed for service and legal compliance; then we delete or anonymize it.</p>
+
+            <h3>Your rights</h3>
+            <p>You can request access, correction, or deletion of your personal data by emailing soyfafood@gmail.com. You can disable location sharing (but delivery may require address entry).</p>
+
+            <h3>Children</h3>
+            <p>This app is intended for adults. We do not knowingly collect personal information from children under 13. If discovered, we will delete it.</p>
+            
+            <h3>Changes to policy</h3>
+            <p>We may update this policy; we will post the effective date at the top and notify users where reasonable.</p>
+            
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+        </div>
+
+        <div id="terms-page" class="info-page hidden">
+            <h2 style="color: var(--primary-color);">Terms & Conditions — Soyfa Food</h2>
+            <p>Effective date: [24 10, 2025]</p>
+
+            <h3>Acceptance</h3>
+            <p>By using the Soyfa Food app you accept these Terms.</p>
+
+            <h3>Service description</h3>
+            <p>Soyfa Food is a local delivery platform that facilitates orders between customers and restaurants/delivery partners in Ladnun.</p>
+
+            <h3>Orders & cancellations</h3>
+            <p>Orders placed are processed immediately. If a restaurant has started preparing food, cancellation may not be possible. Refunds or order issues will be handled case-by-case; contact soyfafood@gmail.com.</p>
+
+            <h3>Payments</h3>
+            <p>Payments are accepted via the in-app options (Cash on Delivery or supported online payments). For online payments, payment gateway terms apply.</p>
+
+            <h3>Delivery</h3>
+            <p>Delivery times are estimates and depend on distance, traffic, weather, and restaurant workload. Soyfa Food and delivery partners will make reasonable efforts to deliver, but are not liable for delays beyond their control.</p>
+            
+            <h3>Food quality</h3>
+            <p>Food quality is the responsibility of the restaurant/vendor. If you receive wrong or damaged items, contact us immediately.</p>
+
+            <h3>User obligations</h3>
+            <p>Provide correct contact and delivery details. Wrong details may cause failed delivery and additional charges.</p>
+            
+            <h3>Account suspension</h3>
+            <p>Soyfa Food reserves the right to suspend or block accounts for fraudulent/fake orders or policy violations.</p>
+
+            <h3>Limitation of liability</h3>
+            <p>To the extent permitted by law, Soyfa Food’s liability is limited to the amount paid for the particular order.</p>
+
+            <h3>Governing law</h3>
+            <p>These terms are governed by the laws of India. Any disputes will be under the appropriate Indian jurisdiction.</p>
+
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+        </div>
+
+         <div id="cancellation-page" class="info-page hidden">
+            <h2 style="color: var(--primary-color);">Cancellation & Refund Policy — Soyfa Food</h2>
+            <p>Effective date: [24 10, 2025]</p>
+
+            <h3>Cancellation by Customer</h3>
+            <p>You may cancel your order free of charge if the restaurant has NOT accepted the order yet (status is 'PLACED'). Once the order status is 'ACCEPTED' or 'PREPARING', cancellation is at the sole discretion of the restaurant, and a cancellation fee may apply.</p>
+
+            <h3>Cancellation by Restaurant/Platform</h3>
+            <p>A restaurant may cancel your order due to item unavailability or unforeseen circumstances. In such cases, if you made an online payment, a full refund will be initiated immediately.</p>
+
+            <h3>Refunds</h3>
+            <p>For prepaid orders that are cancelled or where a fault in service (e.g., missing items) is confirmed: Refunds for online payments are processed to the original payment method and may take 5-7 business days to reflect.</p>
+            <p>For Cash on Delivery (COD) orders, any necessary refund will be handled directly by the delivery partner or credited to your account for future use.</p>
+
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+        </div>
+
+    </div>
+
+    <!-- 2. Main Application Panel -->
+    <div id="app-panel" class="hidden"> 
+        
+        <!-- Header -->
+        <div class="container" style="padding-bottom: 0;">
+            <h1 style="color: var(--primary-color); margin-top: 10px;">Soyfa Food</h1>
+            <!-- Notification with Close Button -->
+            <p id="notification-banner" class="alert hidden">
+                <span id="notification-text"></span>
+                <button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button>
+            </p>
+        </div>
+
+        <!-- 2.1 Home View: Browse Restaurants -->
+        <div id="home-view" class="content-panel container">
+            
+            <!-- Banner Slider Wrapper -->
+            <div id="slider-wrapper">
+                <div id="banner-slider">
+                    <img class="banner-image" src="https://b.zmtcdn.com/data/dish_photos/0f7/7c9e90b66dabd5aa5aa5bb51ee96ac6d0f7.jpg" alt="Dish 1">
+                    <img class="banner-image" src="https://i.ndtvimg.com/i/2017-08/indian-food_650x400_81501923865.jpg" alt="Dish 2">
+                    <img class="banner-image" src="https://b.zmtcdn.com/data/dish_photos/a2e/1bd19d0b97ed99e76bf590573bd43a2e.jpeg" alt="Dish 3">
+                </div>
+            </div>
+
+            <h2>Approved Restaurants</h2>
+            <div id="restaurants-list">
+                <!-- Restaurant Cards will be inserted here -->
+                <p>Loading restaurants...</p>
+            </div>
+        </div>
+
+        <!-- 2.2 Menu View (Dynamic) -->
+        <div id="menu-view" class="content-panel container hidden">
+            <!-- Menu Image -->
+            <img id="menu-restaurant-image" src="" alt="Restaurant Image">
+            <h2 id="menu-restaurant-name">Restaurant Name</h2>
+            <p id="menu-restaurant-cuisine" style="margin-bottom: 15px; color: #777;"></p>
+            <div id="menu-items-list">
+                <!-- Menu items will be inserted here -->
+            </div>
+            <button class="btn btn-secondary" onclick="playClickSound(); showPanel('home-view');">← Back to Restaurants</button>
+            <button class="btn btn-primary" onclick="playClickSound(); showCart();">View Cart (₹<span id="cart-total-display">0.00</span>)</button>
+        </div>
+
+        <!-- 2.3 Orders View: History and Tracking -->
+        <div id="orders-view" class="content-panel container hidden">
+            <h2>My Orders</h2>
+            <div id="orders-list">
+                <!-- Order Cards will be inserted here -->
+                <p>Loading orders...</p>
+            </div>
+        </div>
+
+        <!-- 2.4 Profile View -->
+        <div id="profile-view" class="content-panel container hidden">
+            <h2>My Profile</h2>
+            <div class="profile-card">
+                
+                <!-- Profile Display Mode -->
+                <div id="profile-display-mode">
+                    <div class="profile-field">
+                        <span class="profile-field-label">Name:</span>
+                        <span class="profile-field-value" id="display-name">N/A</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-field-label">Email:</span>
+                        <span class="profile-field-value" id="display-email">N/A</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-field-label">Phone:</span>
+                        <span class="profile-field-value" id="display-phone">N/A</span>
+                    </div>
+                    <div class="profile-field"> 
+                        <span class="profile-field-label">City:</span>
+                        <span class="profile-field-value" id="display-city">N/A</span>
+                    </div>
+                    <div class="profile-field"> 
+                        <span class="profile-field-label">Pincode:</span>
+                        <span class="profile-field-value" id="display-pincode">N/A</span>
+                    </div>
+                    <div class="profile-field" style="border-bottom: none;">
+                        <span class="profile-field-label">Address:</span>
+                        <span class="profile-field-value" id="display-address">N/A</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="playClickSound(); toggleProfileEditMode(true);">Edit Profile</button>
+                </div>
+
+                <!-- Profile Edit Mode -->
+                <div id="profile-edit-form" class="hidden">
+                    <input type="text" id="profile-name" placeholder="Your Name" required>
+                    <input type="email" id="profile-email" placeholder="Email" disabled title="Email cannot be changed">
+                    <input type="text" id="profile-phone" placeholder="Phone Number" required>
+                    <input type="text" id="profile-city" placeholder="City" required> 
+                    <input type="text" id="profile-pincode" placeholder="Pincode" required> 
+                    <input type="text" id="profile-address" placeholder="Delivery Address">
+                    <button class="btn btn-primary" onclick="playClickSound(); updateProfile();">Save Profile</button>
+                    <button class="btn btn-secondary" onclick="playClickSound(); toggleProfileEditMode(false);">Cancel</button>
+                </div>
+                
+                <!-- Info Links - Vertical Buttons -->
+                <div style="margin-top: 30px; text-align: left;">
+                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('about-page');">About Soyfa Food</a> 
+                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('privacy-page');">Privacy Policy</a> 
+                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('terms-page');">Terms & Conditions</a> 
+                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('cancellation-page');">Cancellation & Refund Policy</a>
+                </div>
+
+                <button class="btn btn-secondary" style="margin-top: 20px;" onclick="playClickSound(); customerLogout();">Logout</button>
+            </div>
+        </div>
+
+        <!-- Cart/Checkout View (Modal/Overlay) -->
+        <div id="cart-view" class="hidden">
+            <div class="container">
+                <h2 style="color: var(--primary-color);">Your Cart</h2>
+                <div id="cart-items-list">
+                    <!-- Cart items will be inserted here -->
+                </div>
+
+                <div id="cart-empty-message" style="text-align: center; margin-top: 20px;" class="hidden">
+                    <p>Your cart is empty. Add some delicious food!</p>
+                </div>
+
+                <div class="checkout-summary hidden" id="checkout-summary-box">
+                    <div><span>Subtotal:</span> <span>₹<span id="cart-subtotal">0.00</span></span></div>
+                    <div><span>Delivery Fee:</span> <span>₹<span id="cart-delivery-fee">50.00</span></span></div>
+                    <hr style="margin: 5px 0;">
+                    <div style="font-size: 1.2em; font-weight: bold;">
+                        <span>Total (COD):</span> <span>₹<span id="cart-total">0.00</span></span>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Delivery Details</h3>
+                <input type="text" id="checkout-name" placeholder="Name" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
+                <input type="text" id="checkout-phone" placeholder="Phone" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
+                <input type="text" id="checkout-address" placeholder="Address" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
+
+                <button class="btn btn-primary" id="place-order-btn" onclick="playClickSound(); placeOrder();">Place Order (COD)</button>
+                <button class="btn btn-secondary" onclick="playClickSound(); hideCart();">Close Cart</button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-panel="home-view" onclick="playClickSound(); showPanel('home-view');">
+                <span class="icon"></span> Home
+            </div>
+            <div class="nav-item" data-panel="orders-view" onclick="playClickSound(); showPanel('orders-view');">
+                <span class="icon icon-orders"></span> Orders
+            </div>
+            <div class="nav-item" data-panel="profile-view" onclick="playClickSound(); showPanel('profile-view');">
+                <span class="icon icon-profile"></span> Profile
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // 🔑 1. Firebase Configuration (USER-PROVIDED CONFIG)
+        const firebaseConfig = {
+            apiKey: "AIzaSyACNrzJgRGKmn8JsRuS_2b7RecPIfahTvQ",
+            authDomain: "singup-aec8c.firebaseapp.com",
+            databaseURL: "https://singup-aec8c-default-rtdb.firebaseio.com",
+            projectId: "singup-aec8c",
+            storageBucket: "singup-aec8c.appspot.com",
+            messagingSenderId: "619246550282",
+            appId: "1:619246550282:web:ab0bb54003d529ca820ef3",
+            measurementId: "G-5KYVBVXQZP"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // GLOBAL STATE
+        let currentRestaurantId = null;
+        let customerProfile = {};
+        let cart = []; // { id, name, price, quantity, restaurantId, restaurantName }
+        const DELIVERY_FEE = 50.00;
+        let currentSlide = 0;
+        const totalSlides = 3;
+        let canPlayAudio = false; // Audio Unlock Flag
+
+        // 🔑 2. Authentication Flow
+
+        let isSignUpMode = false;
+
+        // Audio Function - Order Done Sound
+        function playOrderDoneSound() {
+            if (!canPlayAudio) {
+                console.log("Order Done Sound skipped: Audio not unlocked.");
+                return;
+            }
+            const sound = document.getElementById('order-done-sound');
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Order Done Sound playback failed:", e));
+            }
+        }
+        
+        // Audio Function - Click Sound (Request 2)
+        function playClickSound() {
+            if (!canPlayAudio) {
+                console.log("Click Sound skipped: Audio not unlocked.");
+                return;
+            }
+            const sound = document.getElementById('click-sound');
+            if (sound) {
+                sound.currentTime = 0;
+                // Set a slightly lower volume for click sound
+                sound.volume = 0.5; 
+                sound.play().catch(e => console.log("Click Sound playback failed:", e));
+            }
+        }
+
+        // Function to unlock audio context on first user interaction (Request 1 Fix)
+        function initAudioUnlock() {
+            if (canPlayAudio) return; 
+
+            const orderSound = document.getElementById('order-done-sound');
+            const clickSound = document.getElementById('click-sound');
+            
+            // Try to play both sounds with minimal volume to satisfy browser requirements
+            const playPromise1 = orderSound ? orderSound.play() : Promise.resolve();
+            const playPromise2 = clickSound ? clickSound.play() : Promise.resolve();
+
+            Promise.all([playPromise1, playPromise2]).then(() => {
+                orderSound.pause();
+                orderSound.currentTime = 0;
+                clickSound.pause();
+                clickSound.currentTime = 0;
+
+                canPlayAudio = true;
+                console.log("Audio Unlocked.");
+                // Remove the general listener after successful unlock
+                document.body.removeEventListener('click', initAudioUnlock);
+                document.body.removeEventListener('touchend', initAudioUnlock);
+            }).catch(e => {
+                console.log("Audio Unlock failed (browser restriction remains). Need more interaction.");
+            });
+        }
+        
+        // Slider Function
+        function startAutoSlide() {
+            const slider = document.getElementById('banner-slider');
+            if (!slider) return;
+
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                slider.style.transform = `translateX(-${currentSlide * 100 / totalSlides}%)`;
+            }, 5000);
+        }
+        document.addEventListener('DOMContentLoaded', startAutoSlide);
+
+        // Info Page Toggler
+        function showInfoPage(pageId) {
+            document.querySelectorAll('#auth-panel > div').forEach(el => el.classList.add('hidden'));
+            document.getElementById('auth-image')?.classList.remove('hidden');
+
+            const targetElement = document.getElementById(pageId);
+            if(targetElement) targetElement.classList.remove('hidden');
+
+            if (pageId !== 'auth-main-card') {
+                document.getElementById('auth-panel').classList.remove('hidden');
+                document.getElementById('app-panel').classList.add('hidden');
+            }
+        }
+
+        // Helper for Profile View to show an Info Page
+        function showProfileInfoPage(pageId) {
+            document.getElementById('auth-panel').classList.remove('hidden');
+            document.getElementById('app-panel').classList.add('hidden');
+            
+            showInfoPage(pageId);
+            
+            const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
+            if (backBtn) {
+                 backBtn.onclick = () => {
+                    document.getElementById('auth-panel').classList.add('hidden');
+                    document.getElementById('app-panel').classList.remove('hidden');
+                    showPanel('profile-view');
+                 };
+            }
+        }
+
+
+        function toggleAuthMode() {
+            initAudioUnlock();
+
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').textContent = isSignUpMode ? 'Customer Sign Up' : 'Customer Login';
+            document.getElementById('auth-action-btn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
+            
+            // Toggle required sign-up fields
+            document.getElementById('auth-name').classList.toggle('hidden', !isSignUpMode);
+            document.getElementById('auth-phone').classList.toggle('hidden', !isSignUpMode);
+            document.getElementById('auth-city').classList.toggle('hidden', !isSignUpMode); 
+            document.getElementById('auth-pincode').classList.toggle('hidden', !isSignUpMode); 
+            document.getElementById('auth-address').classList.toggle('hidden', !isSignUpMode);
+            
+            document.querySelector('.auth-card button:last-child').textContent = isSignUpMode ? 'Switch to Login' : 'Switch to Sign Up';
+            document.getElementById('auth-error').classList.add('hidden');
+            showInfoPage('auth-main-card');
+        }
+
+        function handleAuth() {
+            initAudioUnlock();
+
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const errorElement = document.getElementById('auth-error');
+            errorElement.classList.add('hidden');
+
+            if (isSignUpMode) {
+                const name = document.getElementById('auth-name').value;
+                const phone = document.getElementById('auth-phone').value;
+                const city = document.getElementById('auth-city').value; 
+                const pincode = document.getElementById('auth-pincode').value; 
+                
+                if (!name || !email || !password || !phone || !city || !pincode) {
+                    errorElement.textContent = "Please fill in Name, Email, Password, Phone, City, and Pincode.";
+                    errorElement.classList.remove('hidden');
+                    return;
+                }
+                
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        const uid = userCredential.user.uid;
+                        db.ref(`customers/${uid}`).set({
+                            name: name,
+                            email: email,
+                            phone: phone,
+                            city: city, 
+                            pincode: pincode, 
+                            address: document.getElementById('auth-address').value || 'N/A',
+                            createdAt: new Date().toISOString()
+                        });
+                    })
+                    .catch((error) => {
+                        errorElement.textContent = `Sign Up failed: ${error.message}`;
+                        errorElement.classList.remove('hidden');
+                    });
+            } else {
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        // Login successful.
+                    })
+                    .catch((error) => {
+                        errorElement.textContent = `Login failed: ${error.message}`;
+                        errorElement.classList.remove('hidden');
+                    });
+            }
+        }
+
+        function customerLogout() {
+            auth.signOut();
+            cart = []; // Clear cart on logout
+        }
+
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                document.getElementById('auth-panel').classList.add('hidden');
+                document.getElementById('app-panel').classList.remove('hidden');
+                loadCustomerData(user.uid);
+                loadNotifications();
+                showPanel('home-view');
+            } else {
+                document.getElementById('auth-panel').classList.remove('hidden');
+                document.getElementById('app-panel').classList.add('hidden');
+                showInfoPage('auth-main-card');
+            }
+        });
+
+
+        // ⚡ 3. Panel Navigation
+
+        function showPanel(panelId) {
+            initAudioUnlock();
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(panelId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-item[data-panel="${panelId}"]`).classList.add('active');
+
+            if(panelId === 'orders-view') loadOrders();
+        }
+
+        // --- Notifications ---
+        function closeNotification() { 
+            document.getElementById('notification-banner').classList.add('hidden');
+        }
+
+        function loadNotifications() {
+            db.ref('admin/notifications').limitToLast(1).on('value', snapshot => {
+                const notifications = snapshot.val();
+                const banner = document.getElementById('notification-banner');
+                const textSpan = document.getElementById('notification-text');
+                if (notifications) {
+                    const latest = Object.values(notifications).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+                    textSpan.textContent = `Global Announcement: ${latest.message}`;
+                    banner.classList.remove('hidden');
+                } else {
+                    banner.classList.add('hidden');
+                }
+            });
+        }
+        
+        // ⚡ 4. Profile Features
+
+        function toggleProfileEditMode(isEdit) {
+            document.getElementById('profile-display-mode').classList.toggle('hidden', isEdit);
+            document.getElementById('profile-edit-form').classList.toggle('hidden', !isEdit);
+            
+            if (isEdit) {
+                document.getElementById('profile-name').value = customerProfile.name || '';
+                document.getElementById('profile-phone').value = customerProfile.phone || '';
+                document.getElementById('profile-city').value = customerProfile.city || ''; 
+                document.getElementById('profile-pincode').value = customerProfile.pincode || ''; 
+                document.getElementById('profile-address').value = customerProfile.address || '';
+            }
+        }
+
+        function loadCustomerData(uid) {
+            db.ref(`customers/${uid}`).on('value', snapshot => {
+                customerProfile = snapshot.val() || {};
+                
+                // Update Display fields
+                document.getElementById('display-name').textContent = customerProfile.name || 'N/A';
+                document.getElementById('display-email').textContent = customerProfile.email || auth.currentUser.email || 'N/A';
+                document.getElementById('display-phone').textContent = customerProfile.phone || 'N/A';
+                document.getElementById('display-city').textContent = customerProfile.city || 'N/A'; 
+                document.getElementById('display-pincode').textContent = customerProfile.pincode || 'N/A'; 
+                document.getElementById('display-address').textContent = customerProfile.address || 'N/A';
+
+                // Update checkout fields
+                document.getElementById('checkout-name').value = customerProfile.name || '';
+                document.getElementById('checkout-phone').value = customerProfile.phone || '';
+                document.getElementById('checkout-address').value = customerProfile.address || '';
+
+                toggleProfileEditMode(false);
+                loadRestaurants(); // Load restaurants after profile (and pincode) is loaded
+            });
+        }
+
+        function updateProfile() {
+            initAudioUnlock();
+            const uid = auth.currentUser.uid;
+            const updates = {
+                name: document.getElementById('profile-name').value.trim(),
+                phone: document.getElementById('profile-phone').value.trim(),
+                city: document.getElementById('profile-city').value.trim(), 
+                pincode: document.getElementById('profile-pincode').value.trim(), 
+                address: document.getElementById('profile-address').value.trim()
+            };
+
+            // Basic validation
+            if (!updates.name || !updates.phone || !updates.city || !updates.pincode) {
+                alert('Please fill in Name, Phone, City, and Pincode.');
+                return;
+            }
+
+            db.ref(`customers/${uid}`).update(updates)
+                .then(() => {
+                    alert('Profile updated successfully!');
+                })
+                .catch(error => alert('Profile update failed: ' + error.message));
+        }
+
+        // ⚡ 5. Restaurant/Menu Browsing
+
+        function loadRestaurants() {
+            const list = document.getElementById('restaurants-list');
+            list.innerHTML = '<p>Loading restaurants...</p>';
+            
+            const customerPincode = customerProfile.pincode; 
+
+            if (!customerPincode || customerPincode === 'N/A') {
+                list.innerHTML = '<p style="color: red; font-weight: bold;">Please update your profile with a Pincode to see available restaurants.</p>';
+                return;
+            }
+            
+            // Listen for all restaurant data, including avgRating, for real-time updates
+            db.ref('restaurants').on('value', snapshot => {
+                const restaurants = snapshot.val() || {};
+                list.innerHTML = '';
+
+                let foundApproved = false;
+                Object.keys(restaurants).forEach(id => {
+                    const r = restaurants[id];
+                    
+                    // Filter by Pincode
+                    if (r.approved && r.pincode === customerPincode) { 
+                        foundApproved = true;
+                        const isOnline = r.isOnline !== false; 
+                        const offlineClass = isOnline ? '' : 'restaurant-card-offline';
+                        const clickHandler = isOnline ? `playClickSound(); viewMenu('${id}', '${r.name}', '${r.cuisine || 'Mixed'}', '${r.imageUrl || ''}');` : '';
+                        
+                        const avgRating = r.avgRating ? r.avgRating.toFixed(1) : 'N/A'; 
+
+                        const card = `
+                            <div class="restaurant-card ${offlineClass}" onclick="${clickHandler}">
+                                <img src="${r.imageUrl || 'https://via.placeholder.com/150?text=R'}" class="restaurant-card-image" alt="${r.name} Image">
+                                <div class="restaurant-card-details">
+                                    <h3>
+                                        <span>${r.name}</span>
+                                        <span class="rating-chip">⭐ ${avgRating}</span>
+                                    </h3>
+                                    <p>${r.cuisine || 'Mixed Cuisine'} | ${r.address || 'N/A'}</p>
+                                    <p style="font-size: 0.8em; color: var(--primary-color); margin-top: 5px;">${isOnline ? 'Tap to View Menu' : 'Currently Offline'}</p>
+                                </div>
+                            </div>
+                        `;
+                        list.innerHTML += card;
+                    }
+                });
+
+                if (!foundApproved) {
+                    list.innerHTML = '<p>No approved restaurants available in your Pincode area at the moment.</p>';
+                }
+            });
+        }
+
+        function viewMenu(restaurantId, name, cuisine, imageUrl) { 
+            currentRestaurantId = restaurantId;
+            document.getElementById('menu-restaurant-name').textContent = name;
+            document.getElementById('menu-restaurant-cuisine').textContent = cuisine;
+            document.getElementById('menu-restaurant-image').src = imageUrl || 'https://via.placeholder.com/180?text=Menu'; 
+
+            const list = document.getElementById('menu-items-list');
+            list.innerHTML = '<p>Loading menu items...</p>';
+
+            db.ref(`menus/${restaurantId}`).on('value', snapshot => {
+                const menu = snapshot.val() || {};
+                list.innerHTML = '';
+
+                Object.keys(menu).forEach(itemId => {
+                    const item = menu[itemId];
+                    if (item.available !== false) { 
+                        const card = `
+                            <div class="menu-item">
+                                <img src="${item.imageUrl || 'https://via.placeholder.com/70?text=Food'}" class="item-image" alt="Food Image">
+                                <div class="item-details">
+                                    <h4>${item.name}</h4>
+                                    <p>${item.description || 'No description'}</p>
+                                    <div class="item-price">₹${item.price.toFixed(2)}</div>
+                                </div>
+                                <button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id: '${itemId}', name: '${item.name}', price: ${item.price}, restaurantId: '${restaurantId}', restaurantName: '${name}'});">+ Add</button>
+                            </div>
+                        `;
+                        list.innerHTML += card;
+                    }
+                });
+                if (list.innerHTML === '') {
+                    list.innerHTML = '<p>No menu items available from this restaurant.</p>';
+                }
+            });
+
+            showPanel('menu-view');
+        }
+
+        // ⚡ 6. Cart and Checkout (COD only)
+
+        function addToCart(item) {
+            initAudioUnlock();
+            if (cart.length > 0 && cart[0].restaurantId !== item.restaurantId) {
+                if (!confirm(`Your cart already contains items from ${cart[0].restaurantName}. Do you want to clear the current cart and add this item from ${item.restaurantName}?`)) {
+                    return;
+                }
+                cart = []; 
+            }
+
+            const existingItem = cart.find(i => i.id === item.id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...item, quantity: 1, restaurantName: item.restaurantName });
+            }
+            updateCartDisplay();
+        }
+
+        function updateCartItemQuantity(itemId, change) {
+            initAudioUnlock(); 
+            const item = cart.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.quantity += change;
+
+            if (item.quantity <= 0) {
+                cart = cart.filter(i => i.id !== itemId);
+            }
+            
+            updateCartDisplay();
+            renderCart();
+        }
+
+        function updateCartDisplay() {
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let total = subtotal > 0 ? subtotal + DELIVERY_FEE : 0;
+
+            document.getElementById('cart-total-display').textContent = total.toFixed(2);
+            document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('cart-total').textContent = total.toFixed(2);
+            document.getElementById('cart-delivery-fee').textContent = DELIVERY_FEE.toFixed(2);
+
+            document.getElementById('checkout-summary-box').classList.toggle('hidden', cart.length === 0);
+            document.getElementById('cart-empty-message').classList.toggle('hidden', cart.length > 0);
+            document.getElementById('place-order-btn').disabled = cart.length === 0;
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-items-list');
+            list.innerHTML = '';
+
+            if (cart.length === 0) {
+                 list.innerHTML = '<p style="text-align: center; margin-top: 10px;">Your cart is empty.</p>';
+            } else {
+                cart.forEach(item => {
+                    const itemTotal = (item.price * item.quantity).toFixed(2);
+                    const cartItemHtml = `
+                        <div class="cart-item">
+                            <div class="cart-item-info">
+                                <h4>${item.name}</h4>
+                                <p>₹${item.price.toFixed(2)} x ${item.quantity}</p>
+                            </div>
+                            <div class="cart-item-controls">
+                                <button onclick="playClickSound(); updateCartItemQuantity('${item.id}', -1);">-</button>
+                                <span>${item.quantity}</span>
+                                <button onclick="playClickSound(); updateCartItemQuantity('${item.id}', 1);">+</button>
+                            </div>
+                             <div style="font-weight: bold;">₹${itemTotal}</div>
+                        </div>
+                    `;
+                    list.innerHTML += cartItemHtml;
+                });
+            }
+            updateCartDisplay();
+        }
+
+        function showCart() {
+            initAudioUnlock(); 
+
+            // Check if user has valid pincode before showing cart
+            if (!customerProfile.pincode || customerProfile.pincode === 'N/A') {
+                 alert('Please update your profile with a Pincode before placing an order.');
+                 showPanel('profile-view');
+                 return;
+            }
+
+            renderCart();
+            // Pre-fill checkout details
+            document.getElementById('checkout-name').value = customerProfile.name || '';
+            document.getElementById('checkout-phone').value = customerProfile.phone || '';
+            document.getElementById('checkout-address').value = customerProfile.address || '';
+            
+            document.getElementById('cart-view').classList.remove('hidden');
+        }
+
+        function hideCart() {
+            document.getElementById('cart-view').classList.add('hidden');
+        }
+
+        function placeOrder() {
+            initAudioUnlock(); 
+
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                return;
+            }
+
+            const name = document.getElementById('checkout-name').value.trim();
+            const phone = document.getElementById('checkout-phone').value.trim();
+            const address = document.getElementById('checkout-address').value.trim();
+
+            if (!name || !phone || !address) {
+                alert('Please fill in your name, phone, and delivery address.');
+                return;
+            }
+            
+            if (!customerProfile.pincode || customerProfile.pincode === 'N/A') {
+                 alert('Error: Missing Pincode in profile. Please update your profile.');
+                 return;
+            }
+
+
+            const restaurantId = cart[0].restaurantId;
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const totalAmount = subtotal + DELIVERY_FEE;
+            const orderItems = cart.map(item => ({
+                itemId: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity
+            }));
+
+            const newOrderRef = db.ref('orders').push();
+            const orderId = newOrderRef.key;
+
+            const orderData = {
+                orderId: orderId,
+                customerUid: auth.currentUser.uid,
+                restaurantId: restaurantId,
+                deliveryUid: '', 
+                items: orderItems,
+                subtotal: subtotal,
+                deliveryFee: DELIVERY_FEE,
+                totalAmount: totalAmount,
+                customerName: name,
+                address: address,
+                phone: phone,
+                city: customerProfile.city, 
+                pincode: customerProfile.pincode, 
+                paymentMethod: 'COD', 
+                status: 'PLACED', 
+                locationLink: '', 
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            newOrderRef.set(orderData)
+                .then(() => {
+                    playOrderDoneSound(); 
+                    alert(`Order #${orderId.substring(0, 8)} placed successfully! Payment: Cash on Delivery.`);
+                    cart = []; 
+                    hideCart();
+                    loadOrders(); 
+                    showPanel('orders-view');
+                })
+                .catch(error => alert('Failed to place order: ' + error.message));
+        }
+
+        // ⚡ 7. Order History and Tracking
+
+        // Helper function to get the current step based on status
+        function getTrackingStep(status) {
+            if (status === 'DELIVERED') return 4;
+            if (status === 'PICKED_UP' || status === 'OUT_FOR_DELIVERY') return 3;
+            if (status === 'READY_FOR_PICKUP') return 2;
+            if (status === 'ACCEPTED' || status === 'PREPARING') return 1;
+            return 0; // PLACED or CANCELLED
+        }
+
+        function loadOrders() {
+            const list = document.getElementById('orders-list');
+            list.innerHTML = '<p>Loading order history...</p>';
+            const customerUid = auth.currentUser.uid;
+            
+            let restaurantsCache = {};
+            db.ref('restaurants').once('value', resSnapshot => {
+                restaurantsCache = resSnapshot.val() || {};
+            
+                let deliveryCache = {};
+                db.ref('deliveryPartners').once('value', deliverySnapshot => {
+                    deliveryCache = deliverySnapshot.val() || {};
+
+                    db.ref('orders').orderByChild('customerUid').equalTo(customerUid).on('value', snapshot => {
+                        const orders = snapshot.val() || {};
+                        list.innerHTML = '';
+                        const orderArray = Object.values(orders).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
+
+                        if (orderArray.length === 0) {
+                            list.innerHTML = '<p>You have not placed any orders yet.</p>';
+                            return;
+                        }
+
+                        orderArray.forEach(order => {
+                            const restaurantName = restaurantsCache[order.restaurantId]?.name || 'Unknown Restaurant';
+                            const deliveryBoyName = order.deliveryUid ? deliveryCache[order.deliveryUid]?.name || 'Delivery Boy Assigned' : 'Awaiting Assignment';
+                            const date = new Date(order.createdAt).toLocaleDateString();
+                            const currentStep = getTrackingStep(order.status);
+                            
+                            const itemsSummary = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
+                            
+                            const deliveryInfo = (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') ?
+                                `<p style="font-size: 0.9em; margin-top: 5px;">Delivery: <strong>${deliveryBoyName}</strong></p>` : '';
+
+                            const locationLink = (order.locationLink && (order.status === 'PICKED_UP' || order.status === 'OUT_FOR_DELIVERY')) ? 
+                                `<p style="margin-top: 5px;"><a href="${order.locationLink}" target="_blank" style="color: blue; text-decoration: underline;">Track Delivery Live</a></p>` : '';
+
+                            // Tracking Bar HTML (Request 3)
+                            const trackingBarHTML = `
+                                <div class="tracking-bar">
+                                    <div class="tracking-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}" style="margin-left:-15px;">
+                                        <span class="tracking-icon">🍽️</span> 
+                                        <span>Restaurant</span>
+                                    </div>
+                                    <div class="tracking-step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}">
+                                        <span class="tracking-icon">📦</span> 
+                                        <span>Fly</span>
+                                    </div>
+                                    <div class="tracking-step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'completed' : ''}">
+                                        <span class="tracking-icon">🛵</span> 
+                                        <span>Bike</span>
+                                    </div>
+                                    <div class="tracking-step ${currentStep >= 4 ? 'active' : ''}" style="margin-right:-15px;">
+                                        <span class="tracking-icon">🏠</span> 
+                                        <span>Delivered</span>
+                                    </div>
+                                </div>
+                            `;
+
+                            // Star Rating System
+                            const existingRating = order.rating || 0;
+                            const ratingSystem = (order.status === 'DELIVERED' && !order.rating) ? 
+                                `<div class="rating-box" id="rating-box-${order.orderId}">
+                                    <p style="font-size: 0.9em; margin-bottom: 5px;">Rate your experience:</p>
+                                    <div class="stars">
+                                        <input type="radio" id="star5-${order.orderId}" name="rating-${order.orderId}" value="5" /><label for="star5-${order.orderId}" onclick="initAudioUnlock()">★</label>
+                                        <input type="radio" id="star4-${order.orderId}" name="rating-${order.orderId}" value="4" /><label for="star4-${order.orderId}" onclick="initAudioUnlock()">★</label>
+                                        <input type="radio" id="star3-${order.orderId}" name="rating-${order.orderId}" value="3" /><label for="star3-${order.orderId}" onclick="initAudioUnlock()">★</label>
+                                        <input type="radio" id="star2-${order.orderId}" name="rating-${order.orderId}" value="2" /><label for="star2-${order.orderId}" onclick="initAudioUnlock()">★</label>
+                                        <input type="radio" id="star1-${order.orderId}" name="rating-${order.orderId}" value="1" /><label for="star1-${order.orderId}" onclick="initAudioUnlock()">★</label>
+                                    </div>
+                                    <button class="btn btn-primary btn-small" onclick="playClickSound(); submitRating('${order.orderId}');">Submit Rating</button>
+                                </div>` : (order.status === 'DELIVERED' ? 
+                                    `<p style="font-size: 0.9em; color: green; margin-top: 5px;">Rating: ⭐${existingRating}/5</p>` : 
+                                    '');
+
+                            const reorderButton = (order.status === 'DELIVERED' || order.status === 'CANCELLED') ?
+                                `<button class="btn btn-secondary btn-small" style="margin-top: 10px;" onclick="playClickSound(); reorder('${order.orderId}');">Reorder</button>` : '';
+
+                            const statusDisplay = order.status === 'CANCELLED' || order.status === 'DELIVERED' ? '' : trackingBarHTML;
+                            const trackingMargin = order.status === 'CANCELLED' || order.status === 'DELIVERED' ? '' : 'style="margin-top: 10px;"';
+
+                            const orderCard = `
+                                <div class="order-card">
+                                    <div class="order-header">
+                                        <h4>Order #${order.orderId.substring(0, 8)}</h4>
+                                        <span class="order-status ${order.status.replace(/[^a-zA-Z]/g, '')}">${order.status}</span>
+                                    </div>
+                                    <p style="font-size: 0.9em;">From: <strong>${restaurantName}</strong> | Date: ${date}</p>
+                                    ${statusDisplay}
+                                    <p ${trackingMargin} style="font-size: 0.9em; color: #777;">Items: ${itemsSummary}</p>
+                                    <p style="font-weight: bold; color: var(--primary-color);">Total: ₹${order.totalAmount.toFixed(2)} (COD)</p>
+                                    ${deliveryInfo}
+                                    ${locationLink}
+                                    ${ratingSystem}
+                                    ${reorderButton}
+                                </div>
+                            `;
+                            list.innerHTML += orderCard;
+                        });
+                    });
+                });
+            });
+        }
+        
+        // --- Submit Rating with Restaurant Avg Rating Update ---
+        function submitRating(orderId) {
+            initAudioUnlock();
+            const ratingInput = document.querySelector(`input[name="rating-${orderId}"]:checked`);
+            if (!ratingInput) {
+                alert('Please select a star rating before submitting.');
+                return;
+            }
+
+            const ratingValue = parseInt(ratingInput.value);
+
+            // 1. Get the order details
+            db.ref(`orders/${orderId}`).once('value', orderSnapshot => {
+                const order = orderSnapshot.val();
+                if (!order) {
+                    alert('Order not found.');
+                    return;
+                }
+                const restaurantId = order.restaurantId;
+
+                // 2. Update the specific order's rating
+                db.ref(`orders/${orderId}`).update({
+                    rating: ratingValue,
+                    ratingTimestamp: new Date().toISOString()
+                })
+                .then(() => {
+                    // 3. Recalculate Average Rating for the Restaurant
+                    return db.ref('orders')
+                        .orderByChild('restaurantId').equalTo(restaurantId)
+                        .once('value');
+                })
+                .then(ordersSnapshot => {
+                    let totalRatingSum = 0;
+                    let ratedOrderCount = 0;
+                    
+                    ordersSnapshot.forEach(childSnapshot => {
+                        const o = childSnapshot.val();
+                        // Only count delivered orders that have a rating
+                        if (o.status === 'DELIVERED' && o.rating) { 
+                            totalRatingSum += o.rating;
+                            ratedOrderCount++;
+                        }
+                    });
+
+                    const newAvgRating = ratedOrderCount > 0 ? totalRatingSum / ratedOrderCount : null;
+
+                    // 4. Update the Restaurant's avgRating
+                    return db.ref(`restaurants/${restaurantId}`).update({
+                        avgRating: newAvgRating
+                    });
+                })
+                .then(() => {
+                    alert(`Rating of ${ratingValue} submitted successfully! Restaurant rating updated.`);
+                    loadOrders(); // Refresh orders view
+                })
+                .catch(error => {
+                    alert('Failed to submit rating or update restaurant rating: ' + error.message);
+                });
+            });
+        }
+
+        function reorder(orderId) {
+            initAudioUnlock();
+            db.ref(`orders/${orderId}`).once('value', snapshot => {
+                const originalOrder = snapshot.val();
+                if (!originalOrder) {
+                    alert('Original order not found.');
+                    return;
+                }
+                
+                cart = [];
+                const restaurantId = originalOrder.restaurantId;
+                
+                db.ref(`restaurants/${restaurantId}`).once('value', resSnapshot => {
+                    const restaurantName = resSnapshot.val()?.name || 'Restaurant';
+
+                    originalOrder.items.forEach(item => {
+                        cart.push({
+                            id: item.itemId,
+                            name: item.name,
+                            price: item.price,
+                            quantity: item.quantity,
+                            restaurantId: restaurantId,
+                            restaurantName: restaurantName
+                        });
+                    });
+
+                    alert(`Order items from ${restaurantName} added to cart. Review and checkout.`);
+                    showPanel('home-view'); 
+                    showCart();
+                });
+            });
+        }
+        
+        // Initial setup on load is handled by auth.onAuthStateChanged
+    </script>
+</body>
 </html>
+
+--- END OF FILE customer.html ---
