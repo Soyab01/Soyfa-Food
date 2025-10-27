@@ -1,3 +1,5 @@
+--- START OF FILE customer.html ---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,18 +75,21 @@
             font-size: 0.9em;
             margin: 0;
         }
-        /* Info Links Style (Updated to look like vertical buttons for profile) */
+        /* Info Links Style (Updated for vertical buttons in Profile View - Request 1) */
         .info-link-btn {
             display: block;
             width: 100%;
-            padding: 10px 15px;
+            padding: 12px 15px; 
             margin-bottom: 8px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: var(--border-radius); 
             background-color: #f9f9f9;
-            text-align: left;
+            text-align: left; /* Edited: Align text to the left */
             text-decoration: none;
-            font-size: 0.95em;
+            font-size: 16px; 
+            font-weight: bold; 
+            color: var(--secondary-color); 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             transition: background-color 0.2s;
         }
         .info-link-btn:hover {
@@ -428,15 +433,9 @@
             color: white;
             background-color: #ccc; /* Default */
         }
-        .order-status.PLACED { background-color: #2196F3; }
-        .order-status.ACCEPTED { background-color: #FFC107; color: var(--text-color); }
-        .order-status.PREPARING { background-color: #4CAF50; }
-        .order-status.READY_FOR_PICKUP { background-color: #ff9800; }
-        .order-status.PICKED_UP, .order-status.OUT_FOR_DELIVERY { background-color: #9c27b0; }
-        .order-status.DELIVERED { background-color: #00bcd4; }
-        .order-status.CANCELLED { background-color: #f44336; }
+        /* Status Colors are already set above */
 
-        /* Order Tracking Bar (Request 3) */
+        /* Order Tracking Bar */
         .tracking-bar {
             display: flex;
             justify-content: space-between;
@@ -456,15 +455,27 @@
             transform: translateY(-50%);
             z-index: 0;
         }
+        .tracking-bar::after { /* Green Progress Line */
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            width: var(--progress-width, 0%);
+            height: 3px;
+            background: var(--step-active-color);
+            transform: translateY(-50%);
+            z-index: 1;
+            transition: width 0.5s ease;
+        }
         .tracking-step {
             position: relative;
-            z-index: 1;
+            z-index: 2; 
             text-align: center;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 0.7em;
+            font-size: 0.75em; 
             font-weight: bold;
             color: var(--step-inactive-color);
             transition: color 0.3s ease;
@@ -477,14 +488,17 @@
             background: var(--card-background);
             border: 3px solid var(--step-inactive-color);
             margin-bottom: 5px;
-            transition: border-color 0.3s ease, color 0.3s ease;
+            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
             font-size: 1.2em;
+        }
+        .tracking-step.active {
+            color: var(--text-color);
         }
         .tracking-step.active .tracking-icon {
             border-color: var(--step-active-color);
             color: var(--step-active-color);
         }
-        .tracking-step.active {
+        .tracking-step.completed {
             color: var(--text-color);
         }
         .tracking-step.completed .tracking-icon {
@@ -540,10 +554,10 @@
         }
     </style>
 </head>
-<body onclick="initAudioUnlock()"> <!-- Added onclick to body for robust audio unlock (Request 1) -->
+<body onclick="initAudioUnlock()"> 
     <!-- Order Done Sound -->
     <audio id="order-done-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3" preload="auto"></audio>
-    <!-- Click Sound (Request 2) -->
+    <!-- Click Sound -->
     <audio id="click-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-sweep-transition-1065.mp3" preload="auto"></audio>
 
     <!-- 1. Auth/Login Panel -->
@@ -700,7 +714,7 @@
             <!-- Banner Slider Wrapper -->
             <div id="slider-wrapper">
                 <div id="banner-slider">
-                    <img class="banner-image" src="https://b.zmtcdn.com/data/dish_photos/0f7/7c9e90b66dabd5aa5aa5bb51ee96ac6d0f7.jpg" alt="Dish 1">
+                    <img class="banner-image" src="https://b.zmtcdn.com/data/dish_photos/0f7/7c9e90b66dabd5aa5bb51ee96ac6d0f7.jpg" alt="Dish 1">
                     <img class="banner-image" src="https://i.ndtvimg.com/i/2017-08/indian-food_650x400_81501923865.jpg" alt="Dish 2">
                     <img class="banner-image" src="https://b.zmtcdn.com/data/dish_photos/a2e/1bd19d0b97ed99e76bf590573bd43a2e.jpeg" alt="Dish 3">
                 </div>
@@ -781,7 +795,7 @@
                     <button class="btn btn-secondary" onclick="playClickSound(); toggleProfileEditMode(false);">Cancel</button>
                 </div>
                 
-                <!-- Info Links - Vertical Buttons -->
+                <!-- Info Links - Vertical Buttons (Request 1) -->
                 <div style="margin-top: 30px; text-align: left;">
                     <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('about-page');">About Soyfa Food</a> 
                     <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('privacy-page');">Privacy Policy</a> 
@@ -881,11 +895,12 @@
             const sound = document.getElementById('order-done-sound');
             if (sound) {
                 sound.currentTime = 0;
+                sound.volume = 1.0; 
                 sound.play().catch(e => console.log("Order Done Sound playback failed:", e));
             }
         }
         
-        // Audio Function - Click Sound (Request 2)
+        // Audio Function - Click Sound 
         function playClickSound() {
             if (!canPlayAudio) {
                 console.log("Click Sound skipped: Audio not unlocked.");
@@ -894,13 +909,14 @@
             const sound = document.getElementById('click-sound');
             if (sound) {
                 sound.currentTime = 0;
-                // Set a slightly lower volume for click sound
                 sound.volume = 0.5; 
-                sound.play().catch(e => console.log("Click Sound playback failed:", e));
+                // Using cloneNode to allow multiple rapid clicks to play
+                const clone = sound.cloneNode(true);
+                clone.play().catch(e => console.log("Click Sound playback failed:", e));
             }
         }
 
-        // Function to unlock audio context on first user interaction (Request 1 Fix)
+        // Function to unlock audio context on first user interaction 
         function initAudioUnlock() {
             if (canPlayAudio) return; 
 
@@ -908,14 +924,28 @@
             const clickSound = document.getElementById('click-sound');
             
             // Try to play both sounds with minimal volume to satisfy browser requirements
-            const playPromise1 = orderSound ? orderSound.play() : Promise.resolve();
-            const playPromise2 = clickSound ? clickSound.play() : Promise.resolve();
-
-            Promise.all([playPromise1, playPromise2]).then(() => {
-                orderSound.pause();
-                orderSound.currentTime = 0;
-                clickSound.pause();
-                clickSound.currentTime = 0;
+            const playPromises = [];
+            
+            if(orderSound) {
+                orderSound.volume = 0.01;
+                playPromises.push(orderSound.play());
+            }
+            if(clickSound) {
+                clickSound.volume = 0.01;
+                playPromises.push(clickSound.play());
+            }
+            
+            Promise.all(playPromises.map(p => p.catch(e => e))).then(() => {
+                if(orderSound) {
+                    orderSound.pause();
+                    orderSound.currentTime = 0;
+                    orderSound.volume = 1.0;
+                }
+                if(clickSound) {
+                    clickSound.pause();
+                    clickSound.currentTime = 0;
+                    clickSound.volume = 0.5;
+                }
 
                 canPlayAudio = true;
                 console.log("Audio Unlocked.");
@@ -923,7 +953,7 @@
                 document.body.removeEventListener('click', initAudioUnlock);
                 document.body.removeEventListener('touchend', initAudioUnlock);
             }).catch(e => {
-                console.log("Audio Unlock failed (browser restriction remains). Need more interaction.");
+                console.log("Audio Unlock attempt completed.");
             });
         }
         
@@ -963,6 +993,7 @@
             const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
             if (backBtn) {
                  backBtn.onclick = () => {
+                    playClickSound(); // Add click sound to back button
                     document.getElementById('auth-panel').classList.add('hidden');
                     document.getElementById('app-panel').classList.remove('hidden');
                     showPanel('profile-view');
@@ -972,8 +1003,6 @@
 
 
         function toggleAuthMode() {
-            initAudioUnlock();
-
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').textContent = isSignUpMode ? 'Customer Sign Up' : 'Customer Login';
             document.getElementById('auth-action-btn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
@@ -991,8 +1020,6 @@
         }
 
         function handleAuth() {
-            initAudioUnlock();
-
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const errorElement = document.getElementById('auth-error');
@@ -1024,7 +1051,12 @@
                         });
                     })
                     .catch((error) => {
-                        errorElement.textContent = `Sign Up failed: ${error.message}`;
+                        // Request 2: Check for existing email error
+                        if (error.code === 'auth/email-already-in-use') {
+                            errorElement.textContent = "Sign Up failed: This email is already in use. Please log in or use a different email.";
+                        } else {
+                            errorElement.textContent = `Sign Up failed: ${error.message}`;
+                        }
                         errorElement.classList.remove('hidden');
                     });
             } else {
@@ -1062,7 +1094,7 @@
         // ⚡ 3. Panel Navigation
 
         function showPanel(panelId) {
-            initAudioUnlock();
+            playClickSound(); // Play click sound on panel navigation
             document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
             document.getElementById(panelId).classList.remove('hidden');
 
@@ -1130,7 +1162,6 @@
         }
 
         function updateProfile() {
-            initAudioUnlock();
             const uid = auth.currentUser.uid;
             const updates = {
                 name: document.getElementById('profile-name').value.trim(),
@@ -1248,7 +1279,6 @@
         // ⚡ 6. Cart and Checkout (COD only)
 
         function addToCart(item) {
-            initAudioUnlock();
             if (cart.length > 0 && cart[0].restaurantId !== item.restaurantId) {
                 if (!confirm(`Your cart already contains items from ${cart[0].restaurantName}. Do you want to clear the current cart and add this item from ${item.restaurantName}?`)) {
                     return;
@@ -1266,7 +1296,6 @@
         }
 
         function updateCartItemQuantity(itemId, change) {
-            initAudioUnlock(); 
             const item = cart.find(i => i.id === itemId);
             if (!item) return;
 
@@ -1324,9 +1353,6 @@
         }
 
         function showCart() {
-            initAudioUnlock(); 
-
-            // Check if user has valid pincode before showing cart
             if (!customerProfile.pincode || customerProfile.pincode === 'N/A') {
                  alert('Please update your profile with a Pincode before placing an order.');
                  showPanel('profile-view');
@@ -1347,8 +1373,6 @@
         }
 
         function placeOrder() {
-            initAudioUnlock(); 
-
             if (cart.length === 0) {
                 alert('Your cart is empty.');
                 return;
@@ -1420,10 +1444,21 @@
         // Helper function to get the current step based on status
         function getTrackingStep(status) {
             if (status === 'DELIVERED') return 4;
-            if (status === 'PICKED_UP' || status === 'OUT_FOR_DELIVERY') return 3;
-            if (status === 'READY_FOR_PICKUP') return 2;
-            if (status === 'ACCEPTED' || status === 'PREPARING') return 1;
-            return 0; // PLACED or CANCELLED
+            if (status === 'PICKED_UP' || status === 'OUT_FOR_DELIVERY') return 3; // Bike Step
+            if (status === 'READY_FOR_PICKUP' || status === 'PREPARING') return 2; // Preparing/Ready Step (Step 2)
+            if (status === 'ACCEPTED' || status === 'PLACED') return 1; // Restaurant Initial Step
+            return 0; // CANCELLED
+        }
+
+        // Helper function to get the progress bar width percentage
+        function getTrackingProgress(status) {
+            const step = getTrackingStep(status);
+            if (step === 0) return '0%';
+            if (step === 1) return '0%'; // Just activated first step, line hasn't moved yet
+            if (step === 2) return '33%'; 
+            if (step === 3) return '67%'; 
+            if (step === 4) return '100%'; 
+            return '0%';
         }
 
         function loadOrders() {
@@ -1454,6 +1489,7 @@
                             const deliveryBoyName = order.deliveryUid ? deliveryCache[order.deliveryUid]?.name || 'Delivery Boy Assigned' : 'Awaiting Assignment';
                             const date = new Date(order.createdAt).toLocaleDateString();
                             const currentStep = getTrackingStep(order.status);
+                            const progressWidth = getTrackingProgress(order.status);
                             
                             const itemsSummary = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
                             
@@ -1463,16 +1499,16 @@
                             const locationLink = (order.locationLink && (order.status === 'PICKED_UP' || order.status === 'OUT_FOR_DELIVERY')) ? 
                                 `<p style="margin-top: 5px;"><a href="${order.locationLink}" target="_blank" style="color: blue; text-decoration: underline;">Track Delivery Live</a></p>` : '';
 
-                            // Tracking Bar HTML (Request 3)
+                            // Tracking Bar HTML 
                             const trackingBarHTML = `
-                                <div class="tracking-bar">
+                                <div class="tracking-bar" style="--progress-width: ${progressWidth};">
                                     <div class="tracking-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}" style="margin-left:-15px;">
                                         <span class="tracking-icon">🍽️</span> 
                                         <span>Restaurant</span>
                                     </div>
                                     <div class="tracking-step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}">
-                                        <span class="tracking-icon">📦</span> 
-                                        <span>Fly</span>
+                                        <span class="tracking-icon">🍳</span> 
+                                        <span>Preparing</span>
                                     </div>
                                     <div class="tracking-step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'completed' : ''}">
                                         <span class="tracking-icon">🛵</span> 
@@ -1480,7 +1516,7 @@
                                     </div>
                                     <div class="tracking-step ${currentStep >= 4 ? 'active' : ''}" style="margin-right:-15px;">
                                         <span class="tracking-icon">🏠</span> 
-                                        <span>Delivered</span>
+                                        <span>Home</span>
                                     </div>
                                 </div>
                             `;
@@ -1491,11 +1527,11 @@
                                 `<div class="rating-box" id="rating-box-${order.orderId}">
                                     <p style="font-size: 0.9em; margin-bottom: 5px;">Rate your experience:</p>
                                     <div class="stars">
-                                        <input type="radio" id="star5-${order.orderId}" name="rating-${order.orderId}" value="5" /><label for="star5-${order.orderId}" onclick="initAudioUnlock()">★</label>
-                                        <input type="radio" id="star4-${order.orderId}" name="rating-${order.orderId}" value="4" /><label for="star4-${order.orderId}" onclick="initAudioUnlock()">★</label>
-                                        <input type="radio" id="star3-${order.orderId}" name="rating-${order.orderId}" value="3" /><label for="star3-${order.orderId}" onclick="initAudioUnlock()">★</label>
-                                        <input type="radio" id="star2-${order.orderId}" name="rating-${order.orderId}" value="2" /><label for="star2-${order.orderId}" onclick="initAudioUnlock()">★</label>
-                                        <input type="radio" id="star1-${order.orderId}" name="rating-${order.orderId}" value="1" /><label for="star1-${order.orderId}" onclick="initAudioUnlock()">★</label>
+                                        <input type="radio" id="star5-${order.orderId}" name="rating-${order.orderId}" value="5" /><label for="star5-${order.orderId}" onclick="playClickSound()">★</label>
+                                        <input type="radio" id="star4-${order.orderId}" name="rating-${order.orderId}" value="4" /><label for="star4-${order.orderId}" onclick="playClickSound()">★</label>
+                                        <input type="radio" id="star3-${order.orderId}" name="rating-${order.orderId}" value="3" /><label for="star3-${order.orderId}" onclick="playClickSound()">★</label>
+                                        <input type="radio" id="star2-${order.orderId}" name="rating-${order.orderId}" value="2" /><label for="star2-${order.orderId}" onclick="playClickSound()">★</label>
+                                        <input type="radio" id="star1-${order.orderId}" name="rating-${order.orderId}" value="1" /><label for="star1-${order.orderId}" onclick="playClickSound()">★</label>
                                     </div>
                                     <button class="btn btn-primary btn-small" onclick="playClickSound(); submitRating('${order.orderId}');">Submit Rating</button>
                                 </div>` : (order.status === 'DELIVERED' ? 
@@ -1505,8 +1541,8 @@
                             const reorderButton = (order.status === 'DELIVERED' || order.status === 'CANCELLED') ?
                                 `<button class="btn btn-secondary btn-small" style="margin-top: 10px;" onclick="playClickSound(); reorder('${order.orderId}');">Reorder</button>` : '';
 
-                            const statusDisplay = order.status === 'CANCELLED' || order.status === 'DELIVERED' ? '' : trackingBarHTML;
-                            const trackingMargin = order.status === 'CANCELLED' || order.status === 'DELIVERED' ? '' : 'style="margin-top: 10px;"';
+                            const statusDisplay = order.status === 'CANCELLED' ? '' : trackingBarHTML;
+                            const trackingMargin = order.status === 'CANCELLED' ? '' : 'style="margin-top: 10px;"';
 
                             const orderCard = `
                                 <div class="order-card">
@@ -1533,7 +1569,6 @@
         
         // --- Submit Rating with Restaurant Avg Rating Update ---
         function submitRating(orderId) {
-            initAudioUnlock();
             const ratingInput = document.querySelector(`input[name="rating-${orderId}"]:checked`);
             if (!ratingInput) {
                 alert('Please select a star rating before submitting.');
@@ -1593,7 +1628,6 @@
         }
 
         function reorder(orderId) {
-            initAudioUnlock();
             db.ref(`orders/${orderId}`).once('value', snapshot => {
                 const originalOrder = snapshot.val();
                 if (!originalOrder) {
@@ -1629,3 +1663,5 @@
     </script>
 </body>
 </html>
+
+--- END OF FILE customer.html ---
