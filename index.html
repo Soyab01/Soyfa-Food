@@ -671,80 +671,36 @@
         let allRestaurantsData = {}; // Cache all restaurant data
 
         // --- Core Flow Management Function ---
-        function navigateAfterAuth(uid, isNewUser) {
+        function navigateAfterAuth(uid) {
             db.ref(`customers/${uid}`).once('value')
                 .then(snapshot => {
                     const profile = snapshot.val();
+                    // Check if profile is incomplete (new user logic)
                     const needsProfileUpdate = !profile || profile.phone === 'N/A' || profile.pincode === 'N/A';
 
-                    if (isNewUser || needsProfileUpdate) {
-                        // 2. NEW FIX: If new user or profile incomplete, go to Profile Edit mode
-                        document.getElementById('auth-panel').classList.add('hidden');
-                        document.getElementById('app-panel').classList.remove('hidden');
+                    document.getElementById('auth-panel').classList.add('hidden');
+                    document.getElementById('app-panel').classList.remove('hidden');
+
+                    if (needsProfileUpdate) {
+                        // If new user or profile incomplete, go to Profile Edit mode
                         showPanel('profile-view'); 
                         toggleProfileEditMode(true); 
                         alert('Please complete your profile details (Phone, City, Pincode) to start ordering!');
                     } else {
-                        // 3. If fully logged in and profile complete, go to Home
-                        document.getElementById('auth-panel').classList.add('hidden');
-                        document.getElementById('app-panel').classList.remove('hidden');
+                        // If fully logged in and profile complete, go to Home
                         showPanel('home-view');
                     }
                 })
                 .catch(error => {
                     console.error("Error checking user profile:", error);
-                    // Fallback to home
+                    // Fallback to home if profile check fails
+                    document.getElementById('auth-panel').classList.add('hidden');
+                    document.getElementById('app-panel').classList.remove('hidden');
                     showPanel('home-view'); 
                 });
         }
         
-        // ** CRITICAL: Handle Google Redirect Result immediately on page load **
-        auth.getRedirectResult().then((result) => {
-            if (result.credential) {
-                // This means the user just came back from a successful Google sign-in redirect
-                const user = result.user;
-                const uid = user.uid;
-                const email = user.email;
-                const name = user.displayName;
-                
-                // Determine if this is a first-time sign-up via Google
-                // NOTE: result.additionalUserInfo.isNewUser is more reliable for new sign-ups here
-                const isNewUser = result.additionalUserInfo.isNewUser; 
-
-                // Check and set up customer data if new (or if redirect result shows new user)
-                db.ref(`customers/${uid}`).once('value')
-                    .then(snapshot => {
-                        if (!snapshot.exists()) {
-                            // First-time sign-up via Google, save minimal data
-                            db.ref(`customers/${uid}`).set({
-                                name: name || 'Google User',
-                                email: email,
-                                phone: 'N/A',
-                                city: 'N/A', 
-                                pincode: 'N/A', 
-                                address: 'N/A',
-                                createdAt: new Date().toISOString()
-                            }).then(() => {
-                                // Navigate to Profile immediately after setting up initial data
-                                navigateAfterAuth(uid, true); 
-                            });
-                        } else {
-                             // Existing user who just logged in via redirect
-                             navigateAfterAuth(uid, false);
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error setting up Google user profile:", error);
-                        alert("An error occurred during profile setup.");
-                    });
-            }
-        }).catch(error => {
-            // Log the error but don't disrupt the main auth flow
-            console.error("Google Redirect Result Error:", error);
-            const errorElement = document.getElementById('auth-error');
-            errorElement.textContent = `Google Sign-In failed: ${error.message}`;
-            errorElement.classList.remove('hidden');
-        });
+        // ** Removed getRedirectResult ** - Now using onAuthStateChanged after popup completes.
 
         // 🔑 2. Authentication Flow
         let isSignUpMode = true; 
@@ -866,7 +822,7 @@
                 auth.createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
                         const uid = userCredential.user.uid;
-                        // Set isNewUser to true for the redirect logic to take over
+                        // Set profile data with phone/pincode provided on sign-up
                         db.ref(`customers/${uid}`).set({
                             name: name,
                             email: email,
@@ -876,8 +832,8 @@
                             address: address || 'N/A',
                             createdAt: new Date().toISOString()
                         }).then(() => {
-                             // After successful internal sign-up, navigate
-                             navigateAfterAuth(uid, true);
+                            // After successful internal sign-up, navigate to home (profile is complete)
+                            // onAuthStateChanged will fire and call loadCustomerData -> navigateAfterAuth, which will see the complete profile and go to home.
                         });
                     })
                     .catch((error) => {
@@ -900,13 +856,46 @@
             }
         }
         
+        // ** MODIFIED: Reverting to signInWithPopup for a pop-up experience **
         function handleGoogleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // This will redirect the current page to Google's sign-in page.
-            auth.signInWithRedirect(provider)
+            // This opens a pop-up window in supported environments (web/hybrid with settings)
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    const uid = user.uid;
+                    const email = user.email;
+                    const name = user.displayName;
+                    
+                    // Check if user already exists in 'customers' DB
+                    db.ref(`customers/${uid}`).once('value')
+                        .then(snapshot => {
+                            if (!snapshot.exists()) {
+                                // First-time sign-up via Google, save minimal data
+                                db.ref(`customers/${uid}`).set({
+                                    name: name || 'Google User',
+                                    email: email,
+                                    phone: 'N/A', // Set to N/A to force profile completion
+                                    city: 'N/A', 
+                                    pincode: 'N/A', 
+                                    address: 'N/A',
+                                    createdAt: new Date().toISOString()
+                                });
+                                // onAuthStateChanged will fire and call loadCustomerData -> navigateAfterAuth, which will see the incomplete profile and go to edit mode.
+                            }
+                            // Existing user or new user with data saved, onAuthStateChanged handles flow
+                        });
+                })
                 .catch((error) => {
                     const errorElement = document.getElementById('auth-error');
-                    errorElement.textContent = `Google Sign-In failed: ${error.message}. Please check your domain settings.`;
+                    // Check for the specific error related to pop-up/redirect protocol issue (only if running locally)
+                    if (error.code === 'auth/operation-not-supported-in-this-environment') {
+                        errorElement.textContent = "Google Sign-In failed: Pop-up is blocked or domain is not secure (must be HTTPS/localhost).";
+                    } else if (error.code === 'auth/unauthorized-domain') {
+                         errorElement.textContent = "Google Sign-In failed: Your domain is not authorized in Firebase settings.";
+                    } else {
+                        errorElement.textContent = `Google Sign-In failed: ${error.message}`;
+                    }
                     errorElement.classList.remove('hidden');
                 });
         }
@@ -919,8 +908,6 @@
 
         auth.onAuthStateChanged(function(user) {
             if (user) {
-                // onAuthStateChanged fires on login AND redirect back. 
-                // navigateAfterAuth is the single source of truth for post-auth navigation.
                 loadCustomerData(user.uid);
                 loadNotifications();
             } else {
@@ -974,6 +961,7 @@
             if (isEdit) {
                 document.getElementById('profile-name').value = customerProfile.name || '';
                 document.getElementById('profile-email').value = customerProfile.email || auth.currentUser.email || '';
+                // Clear fields if the value is 'N/A' (new user placeholder)
                 document.getElementById('profile-phone').value = customerProfile.phone === 'N/A' ? '' : customerProfile.phone || '';
                 document.getElementById('profile-city').value = customerProfile.city === 'N/A' ? '' : customerProfile.city || ''; 
                 document.getElementById('profile-pincode').value = customerProfile.pincode === 'N/A' ? '' : customerProfile.pincode || ''; 
@@ -985,12 +973,10 @@
             db.ref(`customers/${uid}`).on('value', snapshot => {
                 customerProfile = snapshot.val() || {};
                 
-                // Set email from auth if missing in profile
                 if (!customerProfile.email && auth.currentUser.email) {
                     customerProfile.email = auth.currentUser.email;
                 }
                 
-                // 6. Update User Greeting
                 const greetingName = customerProfile.name && customerProfile.name !== 'N/A' ? customerProfile.name.split(' ')[0] : 'Foodie';
                 document.getElementById('user-greeting').textContent = `Welcome, ${greetingName}!`;
 
@@ -1009,7 +995,7 @@
                 document.getElementById('checkout-address').value = customerProfile.address || '';
 
                 // NEW FIX: After data loads, check navigation flow
-                navigateAfterAuth(uid, false); 
+                navigateAfterAuth(uid); 
             });
         }
 
@@ -1037,7 +1023,7 @@
 
             db.ref(`customers/${uid}`).update(updates)
                 .then(() => {
-                    alert('Profile updated successfully!');
+                    alert('Profile updated successfully! Now redirecting to Home.');
                     // NEW FIX: Navigate to Home after saving profile
                     showPanel('home-view');
                 })
