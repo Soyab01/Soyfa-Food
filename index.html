@@ -700,10 +700,10 @@
                 });
         }
         
-        // ** IMPORTANT: Handle Redirect Result for the fallback to sign in and complete the flow **
+        // ** CRITICAL: Handle Redirect Result for the fallback to sign in and complete the flow **
         auth.getRedirectResult().then((result) => {
             if (result.user) {
-                // If we land here, it means signInWithRedirect was called previously and it was successful.
+                // This means signInWithRedirect was called and was successful.
                 const user = result.user;
                 const uid = user.uid;
                 const email = user.email;
@@ -727,11 +727,13 @@
                     });
             }
         }).catch(error => {
-            console.error("Google Redirect Result Error:", error);
-            // Show error in auth panel if needed
-            const errorElement = document.getElementById('auth-error');
-            errorElement.textContent = `Google Sign-In failed during redirect: ${error.message}`;
-            errorElement.classList.remove('hidden');
+            console.error("Google Redirect Result Error (This is expected after redirect):", error);
+            // Show error in auth panel if an actual error occurred
+            if (error.code !== 'auth/cancelled-popup-request') {
+                const errorElement = document.getElementById('auth-error');
+                errorElement.textContent = `Google Sign-In failed during redirect: ${error.message}`;
+                errorElement.classList.remove('hidden');
+            }
         });
 
 
@@ -885,7 +887,7 @@
             }
         }
         
-        // ** MODIFIED: Pop-up with Redirect Fallback **
+        // ** MODIFIED: Pop-up with Redirect Fallback for maximum compatibility **
         function handleGoogleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
             const errorElement = document.getElementById('auth-error');
@@ -916,14 +918,14 @@
                         });
                 })
                 .catch((error) => {
-                    console.error("Popup failed, trying redirect:", error);
+                    console.error("Popup failed, checking for redirect fallback:", error);
                     
                     // 2. If Popup fails due to unsupported environment or blocking, fallback to Redirect
                     if (error.code === 'auth/operation-not-supported-in-this-environment' || 
                         error.code === 'auth/popup-blocked' || 
                         error.code === 'auth/unauthorized-domain') {
                         
-                        errorElement.textContent = "Pop-up failed. Redirecting for Google sign-in...";
+                        errorElement.textContent = "Pop-up failed. Redirecting for Google sign-in (Please wait in the new browser tab)...";
                         errorElement.classList.remove('hidden');
                         
                         // Fallback to Redirect
