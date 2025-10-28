@@ -110,6 +110,34 @@
         /* Menu View */
         #menu-restaurant-image { width: 100%; height: 180px; object-fit: cover; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: var(--shadow); }
         .menu-item { display: flex; background: var(--card-background); border-radius: var(--border-radius); margin-bottom: 10px; padding: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); align-items: center; gap: 15px; }
+        
+        /* --- FIX START: Menu Item Image and Details Styling --- */
+        .item-image {
+            width: 70px; /* Constrain width */
+            height: 70px; /* Constrain height */
+            object-fit: cover;
+            border-radius: 8px; 
+            flex-shrink: 0; /* Ensures image size is respected in flex layout */
+        }
+        .item-details {
+            flex-grow: 1; /* Allows details to take up remaining space */
+        }
+        .item-details h4 {
+            font-size: 1.1em;
+            margin-bottom: 3px;
+            color: var(--text-color);
+        }
+        .item-details p {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        .item-price {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        /* --- FIX END --- */
+
         .add-to-cart-btn { padding: 8px 12px; background-color: var(--step-active-color); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4); }
 
         /* Cart View */
@@ -348,17 +376,24 @@
                 const r = allRestaurantsData[id];
                 if (r.approved && r.pincode === customerProfile.pincode && (r.name.toLowerCase().includes(search) || (r.cuisine||'').toLowerCase().includes(search))) {
                     found = true;
-                    list.innerHTML += `<div class="restaurant-card ${r.isOnline===false?'restaurant-card-offline':''}" onclick="${r.isOnline!==false ? `playClickSound(); viewMenu('${id}','${r.name}','${r.cuisine}','${r.imageUrl}');` : ''}"><img src="${r.imageUrl||'https://via.placeholder.com/150'}" class="restaurant-card-image"><div class="restaurant-card-details"><h3><span>${r.name}</span><span class="rating-chip">⭐ ${r.avgRating?r.avgRating.toFixed(1):'N/A'}</span></h3><p>${r.cuisine||'Mixed'} | ${r.address||'N/A'}</p><p style="font-size:0.8em;color:var(--primary-color);">${r.isOnline!==false?'Tap to View Menu':'Currently Offline'}</p></div></div>`;
+                    // FIX: Added onerror to restaurant image as well for robustness
+                    list.innerHTML += `<div class="restaurant-card ${r.isOnline===false?'restaurant-card-offline':''}" onclick="${r.isOnline!==false ? `playClickSound(); viewMenu('${id}','${r.name}','${r.cuisine}','${r.imageUrl}');` : ''}"><img src="${r.imageUrl||'https://via.placeholder.com/150'}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Rest+Err';" class="restaurant-card-image"><div class="restaurant-card-details"><h3><span>${r.name}</span><span class="rating-chip">⭐ ${r.avgRating?r.avgRating.toFixed(1):'N/A'}</span></h3><p>${r.cuisine||'Mixed'} | ${r.address||'N/A'}</p><p style="font-size:0.8em;color:var(--primary-color);">${r.isOnline!==false?'Tap to View Menu':'Currently Offline'}</p></div></div>`;
                 }
             });
             if(!found) list.innerHTML = '<p>No restaurants found in your area.</p>';
         }
         function viewMenu(rId, name, cuisine, img) {
             currentRestaurantId = rId; document.getElementById('menu-restaurant-name').textContent = name; document.getElementById('menu-restaurant-cuisine').textContent = cuisine||'Mixed'; document.getElementById('menu-restaurant-image').src = img||'https://via.placeholder.com/180';
+            // FIX: Added onerror for Menu header image
+            document.getElementById('menu-restaurant-image').onerror = () => { document.getElementById('menu-restaurant-image').src = 'https://via.placeholder.com/180?text=Rest+Err'; document.getElementById('menu-restaurant-image').onerror = null; };
             const list = document.getElementById('menu-items-list'); list.innerHTML = '<p>Loading menu...</p>';
             db.ref(`menus/${rId}`).on('value', s => {
                 const m = s.val()||{}; list.innerHTML = '';
-                Object.keys(m).forEach(k => { if(m[k].available!==false) list.innerHTML += `<div class="menu-item"><img src="${m[k].imageUrl||'https://via.placeholder.com/70'}" class="item-image"><div class="item-details"><h4>${m[k].name}</h4><p>${m[k].description||''}</p><div class="item-price">₹${m[k].price.toFixed(2)}</div></div><button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id:'${k}',name:'${m[k].name}',price:${m[k].price},restaurantId:'${rId}',restaurantName:'${name}'});">+ ADD</button></div>`; });
+                Object.keys(m).forEach(k => { 
+                    if(m[k].available!==false) 
+                    // FIX: Added class item-image and onerror to menu item image
+                    list.innerHTML += `<div class="menu-item"><img src="${m[k].imageUrl||'https://via.placeholder.com/70'}" class="item-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/70?text=Food+Err'"><div class="item-details"><h4>${m[k].name}</h4><p>${m[k].description||''}</p><div class="item-price">₹${m[k].price.toFixed(2)}</div></div><button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id:'${k}',name:'${m[k].name}',price:${m[k].price},restaurantId:'${rId}',restaurantName:'${name}'});">+ ADD</button></div>`; 
+                });
                 if(list.innerHTML==='') list.innerHTML='<p>No items available.</p>';
             });
             showPanel('menu-view');
