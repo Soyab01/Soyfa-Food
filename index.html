@@ -8,456 +8,190 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <!-- Google Fonts for better Title -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@800&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* Mobile-First, Responsive, Modern UI */
         :root {
-            /* 4. Updated Food-Related Gradient/2D/3D Colors */
             --primary-color: #ff6347; /* Vibrant Tomato Red/Orange */
             --secondary-color: #555;
-            --background-start: #fceabb; /* Light Food Gradient Start - Yellowish Cream */
-            --background-end: #f8b500; /* Light Food Gradient End - Light Gold */
+            --background-start: #fceabb; /* Light Food Gradient Start */
+            --background-end: #f8b500; /* Light Food Gradient End */
             --background-color: #eef2f5; 
             --card-background: #ffffff;
             --border-radius: 12px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Enhanced shadow for depth */
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             --text-color: #333;
-            --step-active-color: #4CAF50; /* Green for active step */
+            --step-active-color: #4CAF50;
             --step-inactive-color: #ccc;
-            /* New 3D Title Colors */
-            --title-shadow-color1: #ff8c00; /* Darker orange/shadow base */
-            --title-shadow-color2: #e05c44; /* Primary color variation */
-            --title-highlight-color: #444; /* Darker highlight color instead of white */
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif; /* Changed default font */
-            color: var(--text-color);
-        }
-
-        body {
-            /* 3. Gradient Background applied to the whole body */
-            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
-            line-height: 1.6;
-            padding-bottom: 60px; /* Space for bottom nav */
-            min-height: 100vh;
-        }
-
-        /* 2. Title Style with Enhanced 3D Highlight - NEW DESIGN */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; color: var(--text-color); }
+        body { background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%); line-height: 1.6; padding-bottom: 60px; min-height: 100vh; }
+        
+        /* Goal 2: 3D Title Design */
         .app-title {
             font-family: 'Poppins', sans-serif;
-            font-weight: 800; /* Bolder font */
-            font-size: 32px; 
-            color: var(--primary-color); /* Main Text Color */
-            /* New 3D/Shadow effect */
+            font-weight: 800; /* Made it bolder */
+            font-size: 32px; /* Increased size */
+            color: var(--primary-color);
+            /* Enhanced 3D/Pop-out shadow */
             text-shadow: 
-                         -1px -1px 0px var(--title-highlight-color), /* Top-left highlight */
-                         1px 1px 0px var(--title-shadow-color1), /* Bottom-right slight shadow */
-                         2px 2px 0px var(--title-shadow-color2), /* Deeper shadow layer */
-                         4px 4px 10px rgba(0, 0, 0, 0.3); /* Stronger overall glow/depth */
-            margin-top: 5px; 
-            margin-bottom: 15px;
-        }
-        
-        /* 1. Header Wrapper for Title/Search (Now only holds title) */
-        .header-content-wrapper {
-            /* Inherits body's gradient */
-            padding: 15px 15px 0 15px; 
-        }
-
-        /* Utility Classes & Buttons */
-        .hidden { display: none !important; }
-        .container {
-            padding: 15px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        /* Adjusted container for home view since header now has its own padding */
-        #home-view.container {
-            padding-top: 15px; 
-        }
-
-        .btn {
-            padding: 12px 15px;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            font-weight: bold;
-            text-align: center;
-            width: 100%;
+                -1px -1px 0 #fff, /* White/Light top-left highlight */
+                1px 1px 0 #f8b500, /* Color/Depth shadow */
+                3px 3px 5px rgba(0, 0, 0, 0.3); /* Stronger overall shadow */
             margin-top: 10px;
-            font-size: 16px;
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
-        }
-        .btn-primary:hover { 
-            background-color: #e05c44; 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 99, 71, 0.6);
-        }
-        .btn-secondary {
-            background-color: #eee;
-            color: var(--secondary-color);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .btn-secondary:hover {
-            background-color: #ddd;
-            transform: translateY(-1px);
+            margin-bottom: 5px; /* Added space before search bar */
+            display: block; /* Ensure it takes full width for container alignment */
         }
         
-        /* Info Links Style */
-        .info-link-btn {
-            display: block;
-            width: 100%;
-            padding: 12px 15px; 
-            margin-bottom: 8px;
-            border: none;
-            border-radius: var(--border-radius); 
-            background-color: var(--card-background);
-            text-align: left;
-            text-decoration: none;
-            font-size: 16px; 
-            font-weight: bold; 
-            color: var(--secondary-color); 
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        .info-link-btn:hover {
-            background-color: #fffaf0;
-            border-color: var(--primary-color);
-            transform: translateX(3px);
-        }
-        .info-link { /* Kept for login screen's inline links */
-            display: inline-block;
-            margin: 10px 5px;
-            font-size: 0.8em;
-            color: var(--secondary-color);
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        /* Info Pages Style */
-        .info-page {
-            background: var(--card-background);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-top: 20px;
-        }
-        
-        /* Auth/Login Screens */
-        #auth-panel {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-        /* Login Image Style */
-        #auth-image {
-            width: 90%;
-            max-width: 350px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-        }
+        .hidden { display: none !important; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .btn { padding: 12px 15px; border: none; border-radius: var(--border-radius); cursor: pointer; transition: all 0.3s ease; font-weight: bold; text-align: center; width: 100%; margin-top: 10px; font-size: 16px; }
+        .btn-small { padding: 6px 10px !important; width: auto !important; font-size: 0.9em !important; margin-top: 5px !important; display: inline-block !important; }
+        .btn-primary { background-color: var(--primary-color); color: white; box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4); }
+        .btn-primary:hover { background-color: #e05c44; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 99, 71, 0.6); }
+        .btn-secondary { background-color: #eee; color: var(--secondary-color); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        .btn-secondary:hover { background-color: #ddd; transform: translateY(-1px); }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; color: #666; }
 
-        .auth-card {
-            background: var(--card-background);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            width: 90%;
-            max-width: 350px;
-            text-align: center;
-        }
+        /* Auth Styles */
+        #auth-panel { display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
+        #auth-image { width: 90%; max-width: 350px; height: 150px; object-fit: cover; border-radius: var(--border-radius); margin-bottom: 20px; box-shadow: var(--shadow); }
+        .auth-card { background: var(--card-background); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow); width: 90%; max-width: 350px; text-align: center; }
+        .auth-card h2 { color: var(--primary-color); margin-bottom: 20px; }
+        .auth-card input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .info-link-btn { display: block; width: 100%; padding: 12px 15px; margin-bottom: 8px; border: none; border-radius: var(--border-radius); background-color: var(--card-background); text-align: left; text-decoration: none; font-size: 16px; font-weight: bold; color: var(--secondary-color); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); }
 
-        .auth-card h2 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-        }
+        /* Navigation & Structure */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--card-background); box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-item { text-align: center; flex-grow: 1; padding: 5px; cursor: pointer; color: #ccc; transition: color 0.3s ease; font-size: 12px; }
+        .nav-item.active { color: var(--primary-color); }
+        .icon::before { content: "\1F3E0"; display: block; font-size: 20px; margin-bottom: 3px; }
+        .icon-orders::before { content: "\1F6CD"; }
+        .icon-profile::before { content: "\1F464"; }
+        .content-panel h2 { margin-bottom: 15px; color: var(--secondary-color); }
 
-        .auth-card input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: var(--card-background);
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .nav-item {
-            text-align: center;
-            flex-grow: 1;
-            padding: 5px;
-            cursor: pointer;
-            color: #ccc;
-            transition: color 0.3s ease;
-            font-size: 12px;
-        }
-
-        .nav-item.active {
-            color: var(--primary-color);
-        }
-
-        .nav-item i {
-            display: block;
-            font-size: 20px;
-            margin-bottom: 3px;
-        }
-        
-        /* Font Awesome for Icons (Simplified with Unicode/Text for this demo) */
-        .icon::before {
-            content: "\1F3E0"; /* Home */
-            display: block;
-            font-size: 20px;
-            margin-bottom: 3px;
-        }
-        .icon-orders::before { content: "\1F6CD"; /* Shopping Bags */ }
-        .icon-profile::before { content: "\1F464"; /* Profile */ }
-
-
-        /* Content Panels */
-        .content-panel h2 {
-            margin-bottom: 15px;
-            color: var(--secondary-color);
-        }
-        
-        /* Banner Slider */
-        #slider-wrapper {
-            overflow: hidden;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            box-shadow: var(--shadow);
-        }
-        #banner-slider {
-            display: flex;
-            width: 300%; 
-            transition: transform 0.5s ease-in-out;
-        }
-        .banner-image {
-            width: 33.333%; 
-            height: 180px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-        
-        /* Search Bar Style (only used in home-view.container now) */
+        /* Goal 1: Search Bar Styling */
         .search-container {
             position: relative;
-            margin: 10px 0 20px 0; /* Re-added margin for separation */
+            margin-bottom: 20px;
         }
         #restaurant-search {
             width: 100%;
-            padding: 12px 45px 12px 15px; /* Added right padding for icon */
+            padding: 12px 45px 12px 15px; /* Added padding for icon on the right */
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             font-size: 16px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            background-color: var(--card-background); /* Ensure search bar stands out */
         }
         .search-icon {
             position: absolute;
-            right: 15px;
             top: 50%;
+            right: 15px;
             transform: translateY(-50%);
-            color: var(--secondary-color);
-            font-size: 1.2em;
-            pointer-events: none; /* Prevents icon from blocking input clicks */
-        }
-        .search-icon::before {
-             content: "\1F50D"; /* Magnifying Glass Icon (Unicode) */
-        }
-        
-        /* 3. Menu Image Fix */
-        #menu-restaurant-image { 
-            width: 100%;
-            max-width: 100%; /* Ensures it fits the container */
-            height: 180px;
-            object-fit: cover;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: var(--primary-color);
+            font-size: 18px;
+            pointer-events: none; /* Make sure the icon doesn't block input clicks */
         }
 
-        /* Home/Restaurant List */
-        .restaurant-card {
-            background: var(--card-background);
-            padding: 0; 
-            margin-bottom: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            overflow: hidden; 
-        }
+        /* Home View & Components */
+        #slider-wrapper { overflow: hidden; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: var(--shadow); }
+        #banner-slider { display: flex; width: 300%; transition: transform 0.5s ease-in-out; }
+        .banner-image { width: 33.333%; height: 180px; object-fit: cover; flex-shrink: 0; }
+        .restaurant-card { background: var(--card-background); padding: 0; margin-bottom: 15px; border-radius: var(--border-radius); box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; overflow: hidden; }
         .restaurant-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); }
-        .restaurant-card-image { 
-            width: 100%;
-            height: 150px; 
-            object-fit: cover;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .restaurant-card-details {
-            padding: 15px;
-        }
-        .restaurant-card-details h3 { 
-            color: var(--primary-color); 
-            margin-bottom: 5px; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .restaurant-card-details p { font-size: 0.9em; color: #777; }
-        .restaurant-card-offline {
-            background-color: #ffeaea;
-            opacity: 0.7;
-            pointer-events: none;
-        }
-        .rating-chip { 
-            background-color: #4CAF50;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            line-height: 1.2;
-        }
+        .restaurant-card-image { width: 100%; height: 150px; object-fit: cover; border-bottom: 1px solid #f0f0f0; }
+        .restaurant-card-details { padding: 15px; }
+        .restaurant-card-details h3 { color: var(--primary-color); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .restaurant-card-offline { background-color: #ffeaea; opacity: 0.7; pointer-events: none; }
+        .rating-chip { background-color: #4CAF50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+
+        /* Menu View */
+        #menu-restaurant-image { width: 100%; height: 180px; object-fit: cover; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: var(--shadow); }
+        .menu-item { display: flex; background: var(--card-background); border-radius: var(--border-radius); margin-bottom: 10px; padding: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); align-items: center; gap: 15px; }
+        .add-to-cart-btn { padding: 8px 12px; background-color: var(--step-active-color); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4); }
+
+        /* Cart View */
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .cart-item-controls { display: flex; align-items: center; background: #f5f5f5; border-radius: 20px; padding: 2px; }
+        .cart-item-controls button { width: 30px; height: 30px; border-radius: 50%; border: none; background: white; font-weight: bold; color: var(--primary-color); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .checkout-summary { background: #fff; padding: 20px; border-radius: var(--border-radius); margin-top: 20px; box-shadow: var(--shadow); }
+        .empty-cart-state { text-align: center; padding: 50px 20px; color: #999; background: white; border-radius: var(--border-radius); box-shadow: var(--shadow); }
+        .empty-cart-icon { font-size: 60px; margin-bottom: 20px; display: block; opacity: 0.5; }
+
+        /* Orders & Tracking */
+        .order-card { background: var(--card-background); padding: 15px; margin-bottom: 15px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .order-status { padding: 4px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold; color: white; }
+        .order-status.DELIVERED { background-color: var(--step-active-color); }
+        .tracking-bar { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 25px 0; padding: 0 10px; min-height: 50px; }
+        .tracking-bar::before, .tracking-bar::after { content: ''; position: absolute; top: 25px; left: 10px; height: 4px; transform: translateY(-50%); }
+        .tracking-bar::before { right: 10px; background-color: var(--step-inactive-color); z-index: 1; }
+        .tracking-bar::after { left: 10px; background-color: var(--step-active-color); width: var(--progress-width, 0%); transition: width 0.5s ease-in-out; z-index: 2; border-radius: 4px; }
+        .tracking-step { display: flex; flex-direction: column; align-items: center; width: 25%; position: relative; z-index: 3; font-size: 0.8em; color: #777; }
+        .tracking-icon { width: 30px; height: 30px; border-radius: 50%; background-color: var(--step-inactive-color); color: white; display: flex; justify-content: center; align-items: center; margin-bottom: 5px; box-shadow: 0 0 0 4px var(--card-background); transition: all 0.3s ease; }
+        .tracking-step.active .tracking-icon { background-color: var(--step-active-color); transform: scale(1.1); }
+        .tracking-step.active { color: var(--text-color); font-weight: 500; }
+        
+        /* Profile */
+        .profile-card { background: var(--card-background); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; }
+        .profile-field { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .profile-field-label { font-weight: 500; color: var(--secondary-color); }
+        .stars { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
     </style>
 </head>
 <body onclick="initAudioUnlock()"> 
-    <!-- Order Done Sound -->
     <audio id="order-done-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3" preload="auto"></audio>
-    <!-- Click Sound -->
     <audio id="click-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-sweep-transition-1065.mp3" preload="auto"></audio>
 
     <!-- 1. Auth/Login Panel -->
     <div id="auth-panel" class="container">
-        
-        <!-- Login Image -->
         <img id="auth-image" src="https://t3.ftcdn.net/jpg/02/79/75/74/360_F_279757414_o2KNnB8fZ2eahIK6SqydL4tGFkO5RDH5.jpg" alt="Food Delivery Banner">
-        
-        <!-- Main Login Card -->
         <div class="auth-card" id="auth-main-card">
-            <!-- 5. Title Change -->
             <h2 id="auth-title">Sign Up</h2> 
             <input type="email" id="auth-email" placeholder="Email" required>
             <input type="password" id="auth-password" placeholder="Password" required>
-            
-            <input type="text" id="auth-name" placeholder="Name" required> <!-- 1. Default to Sign Up -->
-            <input type="text" id="auth-phone" placeholder="Phone" required> <!-- 1. Default to Sign Up -->
-            <input type="text" id="auth-city" placeholder="City" required> <!-- 1. Default to Sign Up -->
-            <input type="text" id="auth-pincode" placeholder="Pincode" required> <!-- 1. Default to Sign Up -->
-            <input type="text" id="auth-address" placeholder="Address (Optional)"> <!-- 1. Default to Sign Up -->
-            
+            <input type="text" id="auth-name" placeholder="Name" required>
+            <input type="text" id="auth-phone" placeholder="Phone" required>
+            <input type="text" id="auth-city" placeholder="City" required> 
+            <input type="text" id="auth-pincode" placeholder="Pincode" required> 
+            <input type="text" id="auth-address" placeholder="Address (Optional)">
             <button class="btn btn-primary" id="auth-action-btn" onclick="playClickSound(); handleAuth();">Sign Up</button>
             <p id="auth-error" style="color: var(--primary-color); margin-top: 15px;" class="hidden"></p>
-            
             <button class="btn btn-secondary" onclick="playClickSound(); toggleAuthMode();">Switch to Login</button>
-
              <div style="margin-top: 20px; text-align: center;">
                 <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('about-page');">About</a> | 
                 <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('privacy-page');">Privacy Policy</a> | 
-                <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('terms-page');">Terms & Conditions</a>
+                <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('terms-page');">Terms</a>
             </div>
         </div>
-
-        <!-- Info Pages (Kept here for single-page toggling) -->
-        <div id="about-page" class="info-page hidden">
-            <h2 style="color: var(--primary-color);">About Soyfa Food</h2>
-            <p>Welcome to *Soyfa Food*, your local food delivery partner in Ladnun City.</p>
-            <p>We bring your favorite food from nearby restaurants, hotels, and food stalls straight to your doorstep — fresh, fast, and affordable.</p>
-            <p>Soyfa Food is a private app created to make food ordering simple for local people. We focus on providing fast delivery, live order tracking, and genuine restaurant listings.</p>
-            <p>Our goal is to support local food businesses and provide customers with a smooth food delivery experience.</p>
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
-        </div>
-
-        <div id="privacy-page" class="info-page hidden">
-            <h2 style="color: var(--primary-color);">Privacy Policy for Soyfa Food</h2>
-            <p>Effective date: [24 10, 2025]</p>
-            <p>Contact: soyfafood@gmail.com</p>
-
-            <h3>Introduction</h3>
-            <!-- ... (Content) ... -->
-            
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
-        </div>
-
-        <div id="terms-page" class="info-page hidden">
-            <h2 style="color: var(--primary-color);">Terms & Conditions — Soyfa Food</h2>
-            <p>Effective date: [24 10, 2025]</p>
-            
-            <!-- ... (Content) ... -->
-
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
-        </div>
-
-         <div id="cancellation-page" class="info-page hidden">
-            <h2 style="color: var(--primary-color);">Cancellation & Refund Policy — Soyfa Food</h2>
-            <p>Effective date: [24 10, 2025]</p>
-
-            <!-- ... (Content) ... -->
-
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
-        </div>
-
+        <div id="about-page" class="info-page hidden"><h2 style="color: var(--primary-color);">About Soyfa Food</h2><p>Welcome to Soyfa Food, your local food delivery partner.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+        <div id="privacy-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Privacy Policy</h2><p>We respect your privacy and only use data for delivery.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+        <div id="terms-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Terms & Conditions</h2><p>By using this app you agree to our terms of service.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+         <div id="cancellation-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Cancellation Policy</h2><p>Cancellations depend on restaurant preparation status.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
     </div>
 
     <!-- 2. Main Application Panel -->
     <div id="app-panel" class="hidden"> 
         
-        <!-- 1, 3. Header/Title Container with Gradient Background -->
-        <div class="header-content-wrapper">
-            <div class="container">
-                <!-- 2. Improved Title -->
-                <h1 class="app-title">Soyfa Food</h1> 
-                
-                <!-- Notification with Close Button -->
-                <p id="notification-banner" class="alert hidden" style="margin-bottom: 0; margin-top: 15px;">
-                    <span id="notification-text"></span>
-                    <button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button>
-                </p>
+        <!-- Header -->
+        <div class="container" style="padding-bottom: 0;">
+            <!-- Goal 2: 3D Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
+            <p id="notification-banner" class="alert hidden"><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
+            
+            <!-- Goal 1: Search Bar (Moved Here) -->
+            <div class="search-container">
+                <input type="text" id="restaurant-search" placeholder="Search restaurants or cuisine..." onkeyup="filterRestaurants(this.value);">
+                <span class="search-icon">🔍</span>
             </div>
         </div>
 
-        <!-- 2.1 Home View: Browse Restaurants -->
-        <div id="home-view" class="content-panel container" style="padding-top: 15px;">
-            
-            <!-- 6. User Greeting -->
+        <!-- 2.1 Home View -->
+        <div id="home-view" class="content-panel container">
             <h2 id="user-greeting" style="color: var(--primary-color); margin-bottom: 20px;">Welcome!</h2>
-
-            <!-- 2. Search Bar (Only here, as requested) -->
-            <div class="search-container">
-                <input type="text" id="restaurant-search" placeholder="Search by restaurant name or cuisine..." onkeyup="filterRestaurants(this.value);">
-                <span class="search-icon"></span>
-            </div>
-
+            
             <!-- Banner Slider Wrapper -->
             <div id="slider-wrapper">
                 <div id="banner-slider">
@@ -468,1003 +202,241 @@
             </div>
 
             <h2>Approved Restaurants</h2>
-            <div id="restaurants-list">
-                <!-- Restaurant Cards will be inserted here -->
-                <p>Loading restaurants...</p>
-            </div>
+            <div id="restaurants-list"><p>Loading restaurants...</p></div>
         </div>
 
-        <!-- 2.2 Menu View (Dynamic) -->
+        <!-- 2.2 Menu View -->
         <div id="menu-view" class="content-panel container hidden">
-            <!-- 3. Menu Image (Fixed Zoom Issue with CSS) -->
             <img id="menu-restaurant-image" src="" alt="Restaurant Image">
-            <h2 id="menu-restaurant-name">Restaurant Name</h2>
+            <h2 id="menu-restaurant-name" style="margin-bottom: 5px;">Restaurant Name</h2>
             <p id="menu-restaurant-cuisine" style="margin-bottom: 15px; color: #777;"></p>
-            <div id="menu-items-list">
-                <!-- Menu items will be inserted here -->
-            </div>
+            <div id="menu-items-list"></div>
             <button class="btn btn-secondary" onclick="playClickSound(); showPanel('home-view');">← Back to Restaurants</button>
             <button class="btn btn-primary" onclick="playClickSound(); showCart();">View Cart (₹<span id="cart-total-display">0.00</span>)</button>
         </div>
 
-        <!-- 2.3 Orders View: History and Tracking -->
-        <!-- ... (Orders View content remains the same) ... -->
+        <!-- 2.3 Orders View -->
         <div id="orders-view" class="content-panel container hidden">
             <h2>My Orders</h2>
-            <div id="orders-list">
-                <!-- Order Cards will be inserted here -->
-                <p>Loading orders...</p>
-            </div>
+            <div id="orders-list"><p>Loading orders...</p></div>
         </div>
 
         <!-- 2.4 Profile View -->
-        <!-- ... (Profile View content remains the same) ... -->
         <div id="profile-view" class="content-panel container hidden">
             <h2>My Profile</h2>
             <div class="profile-card">
-                
-                <!-- Profile Display Mode -->
                 <div id="profile-display-mode">
-                    <div class="profile-field">
-                        <span class="profile-field-label">Name:</span>
-                        <span class="profile-field-value" id="display-name">N/A</span>
-                    </div>
-                    <div class="profile-field">
-                        <span class="profile-field-label">Email:</span>
-                        <span class="profile-field-value" id="display-email">N/A</span>
-                    </div>
-                    <div class="profile-field">
-                        <span class="profile-field-label">Phone:</span>
-                        <span class="profile-field-value" id="display-phone">N/A</span>
-                    </div>
-                    <div class="profile-field"> 
-                        <span class="profile-field-label">City:</span>
-                        <span class="profile-field-value" id="display-city">N/A</span>
-                    </div>
-                    <div class="profile-field"> 
-                        <span class="profile-field-label">Pincode:</span>
-                        <span class="profile-field-value" id="display-pincode">N/A</span>
-                    </div>
-                    <div class="profile-field" style="border-bottom: none;">
-                        <span class="profile-field-label">Address:</span>
-                        <span class="profile-field-value" id="display-address">N/A</span>
-                    </div>
+                    <div class="profile-field"><span class="profile-field-label">Name:</span><span id="display-name">N/A</span></div>
+                    <div class="profile-field"><span class="profile-field-label">Email:</span><span id="display-email">N/A</span></div>
+                    <div class="profile-field"><span class="profile-field-label">Phone:</span><span id="display-phone">N/A</span></div>
+                    <div class="profile-field"><span class="profile-field-label">City:</span><span id="display-city">N/A</span></div>
+                    <div class="profile-field"><span class="profile-field-label">Pincode:</span><span id="display-pincode">N/A</span></div>
+                    <div class="profile-field" style="border-bottom: none;"><span class="profile-field-label">Address:</span><span id="display-address">N/A</span></div>
                     <button class="btn btn-secondary" onclick="playClickSound(); toggleProfileEditMode(true);">Edit Profile</button>
                 </div>
-
-                <!-- Profile Edit Mode -->
                 <div id="profile-edit-form" class="hidden">
-                    <input type="text" id="profile-name" placeholder="Your Name" required>
-                    <input type="email" id="profile-email" placeholder="Email" disabled title="Email cannot be changed">
-                    <input type="text" id="profile-phone" placeholder="Phone Number" required>
-                    <input type="text" id="profile-city" placeholder="City" required> 
-                    <input type="text" id="profile-pincode" placeholder="Pincode" required> 
-                    <input type="text" id="profile-address" placeholder="Delivery Address">
+                    <input type="text" id="profile-name" placeholder="Your Name" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <input type="email" id="profile-email" disabled style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; background: #eee;">
+                    <input type="text" id="profile-phone" placeholder="Phone" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <input type="text" id="profile-city" placeholder="City" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;"> 
+                    <input type="text" id="profile-pincode" placeholder="Pincode" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;"> 
+                    <input type="text" id="profile-address" placeholder="Address" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px;">
                     <button class="btn btn-primary" onclick="playClickSound(); updateProfile();">Save Profile</button>
                     <button class="btn btn-secondary" onclick="playClickSound(); toggleProfileEditMode(false);">Cancel</button>
                 </div>
-                
-                <!-- Info Links - Vertical Buttons -->
-                <div style="margin-top: 30px; text-align: left;">
-                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('about-page');">About Soyfa Food</a> 
+                <div style="margin-top: 30px;">
+                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('about-page');">About Us</a> 
                     <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('privacy-page');">Privacy Policy</a> 
                     <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('terms-page');">Terms & Conditions</a> 
-                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('cancellation-page');">Cancellation & Refund Policy</a>
+                    <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('cancellation-page');">Cancellation Policy</a>
                 </div>
-
                 <button class="btn btn-secondary" style="margin-top: 20px;" onclick="playClickSound(); customerLogout();">Logout</button>
             </div>
         </div>
 
-        <!-- Cart/Checkout View (Modal/Overlay) -->
-        <!-- ... (Cart View content remains the same) ... -->
-        <div id="cart-view" class="hidden">
-            <div class="container">
-                <h2 style="color: var(--primary-color);">Your Cart</h2>
-                <div id="cart-items-list">
-                    <!-- Cart items will be inserted here -->
-                </div>
+        <!-- NEW FULL SCREEN CART VIEW -->
+        <div id="cart-view" class="content-panel container hidden">
+            <h2 style="color: var(--primary-color);">Your Cart</h2>
+            <div id="cart-items-list">
+                <!-- Cart items or Empty State will appear here -->
+            </div>
 
-                <div class="checkout-summary hidden" id="checkout-summary-box">
+            <!-- Checkout Section -->
+            <div id="checkout-section" class="hidden">
+                <div class="checkout-summary">
                     <div><span>Subtotal:</span> <span>₹<span id="cart-subtotal">0.00</span></span></div>
                     <div><span>Delivery Fee:</span> <span>₹<span id="cart-delivery-fee">50.00</span></span></div>
-                    <hr style="margin: 5px 0;">
-                    <div style="font-size: 1.2em; font-weight: bold;">
-                        <span>Total (COD):</span> <span>₹<span id="cart-total">0.00</span></span>
+                    <hr style="margin: 10px 0; border-top: 1px dashed #ddd;">
+                    <div style="font-size: 1.2em; font-weight: bold; color: var(--primary-color);">
+                        <span>Total to Pay (COD):</span> <span>₹<span id="cart-total">0.00</span></span>
                     </div>
                 </div>
                 
-                <h3 style="margin-top: 20px; margin-bottom: 10px;">Delivery Details</h3>
-                <input type="text" id="checkout-name" placeholder="Name" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
-                <input type="text" id="checkout-phone" placeholder="Phone" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
-                <input type="text" id="checkout-address" placeholder="Address" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
+                <h3 style="margin-top: 25px; margin-bottom: 15px;">Delivery Details</h3>
+                <div style="background: white; padding: 15px; border-radius: 12px; box-shadow: var(--shadow);">
+                    <input type="text" id="checkout-name" placeholder="Receiver Name" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
+                    <input type="text" id="checkout-phone" placeholder="Receiver Phone" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;" required>
+                    <textarea id="checkout-address" placeholder="Full Delivery Address" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; resize: vertical; min-height: 80px;" required></textarea>
+                </div>
 
-                <button class="btn btn-primary" id="place-order-btn" onclick="playClickSound(); placeOrder();">Place Order (COD)</button>
-                <button class="btn btn-secondary" onclick="playClickSound(); hideCart();">Close Cart</button>
+                <button class="btn btn-primary" id="place-order-btn" style="margin-top: 20px; font-size: 18px; padding: 15px;" onclick="playClickSound(); placeOrder();">CONFIRM ORDER (COD)</button>
             </div>
+             <button class="btn btn-secondary" style="margin-top: 20px;" onclick="playClickSound(); goBackFromCart();">← Continue Shopping</button>
         </div>
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
-            <div class="nav-item active" data-panel="home-view" onclick="playClickSound(); showPanel('home-view');">
-                <span class="icon"></span> Home
-            </div>
-            <div class="nav-item" data-panel="orders-view" onclick="playClickSound(); showPanel('orders-view');">
-                <span class="icon icon-orders"></span> Orders
-            </div>
-            <div class="nav-item" data-panel="profile-view" onclick="playClickSound(); showPanel('profile-view');">
-                <span class="icon icon-profile"></span> Profile
-            </div>
+            <div class="nav-item active" data-panel="home-view" onclick="playClickSound(); showPanel('home-view');"><span class="icon"></span> Home</div>
+            <div class="nav-item" data-panel="orders-view" onclick="playClickSound(); showPanel('orders-view');"><span class="icon icon-orders"></span> Orders</div>
+            <div class="nav-item" data-panel="profile-view" onclick="playClickSound(); showPanel('profile-view');"><span class="icon icon-profile"></span> Profile</div>
         </nav>
     </div>
 
     <script>
-        // 🔑 1. Firebase Configuration (USER-PROVIDED CONFIG)
-        const firebaseConfig = {
-            apiKey: "AIzaSyACNrzJgRGKmn8JsRuS_2b7RecPIfahTvQ",
-            authDomain: "singup-aec8c.firebaseapp.com",
-            databaseURL: "https://singup-aec8c-default-rtdb.firebaseio.com",
-            projectId: "singup-aec8c",
-            storageBucket: "singup-aec8c.appspot.com",
-            messagingSenderId: "619246550282",
-            appId: "1:619246550282:web:ab0bb54003d529ca820ef3",
-            measurementId: "G-5KYVBVXQZP"
-        };
+        // Firebase Config
+        const firebaseConfig = { apiKey: "AIzaSyACNrzJgRGKmn8JsRuS_2b7RecPIfahTvQ", authDomain: "singup-aec8c.firebaseapp.com", databaseURL: "https://singup-aec8c-default-rtdb.firebaseio.com", projectId: "singup-aec8c", storageBucket: "singup-aec8c.appspot.com", messagingSenderId: "619246550282", appId: "1:619246550282:web:ab0bb54003d529ca820ef3", measurementId: "G-5KYVBVXQZP" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth(), db = firebase.database();
 
-        // Initialize Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        // GLOBAL STATE
-        let currentRestaurantId = null;
-        let customerProfile = {};
-        let cart = []; // { id, name, price, quantity, restaurantId, restaurantName }
+        // Global State
+        let currentRestaurantId = null, customerProfile = {}, cart = [], allRestaurantsData = {};
         const DELIVERY_FEE = 50.00;
-        let currentSlide = 0;
-        const totalSlides = 3;
-        let canPlayAudio = false; // Audio Unlock Flag
-        let allRestaurantsData = {}; // Cache all restaurant data
+        let currentSlide = 0, canPlayAudio = false;
 
-        // --- Core Flow Management Function ---
-        function navigateAfterAuth(uid) {
-            db.ref(`customers/${uid}`).once('value')
-                .then(snapshot => {
-                    const profile = snapshot.val();
-                    // Check if profile is incomplete (new user logic)
-                    const needsProfileUpdate = !profile || profile.phone === 'N/A' || profile.pincode === 'N/A';
+        // --- Auth & Init ---
+        document.addEventListener('DOMContentLoaded', () => { if(document.getElementById('auth-panel').classList.contains('hidden')) return; toggleAuthMode(true); startAutoSlide(); });
+        function initAudioUnlock() { if (canPlayAudio) return; const o = document.getElementById('order-done-sound'), c = document.getElementById('click-sound'); if(o) { o.volume=0.01; o.play().catch(()=>{}); } if(c) { c.volume=0.01; c.play().catch(()=>{}); } setTimeout(()=>{ if(o){o.pause();o.currentTime=0;o.volume=1.0;} if(c){c.pause();c.currentTime=0;c.volume=0.5;} canPlayAudio=true; }, 500); document.body.removeEventListener('click', initAudioUnlock); }
+        function playClickSound() { if(canPlayAudio && document.getElementById('click-sound')) { const s = document.getElementById('click-sound').cloneNode(true); s.volume=0.5; s.play().catch(()=>{}); } }
+        function playOrderDoneSound() { if(canPlayAudio && document.getElementById('order-done-sound')) document.getElementById('order-done-sound').play().catch(()=>{}); }
+        function startAutoSlide() { setInterval(() => { currentSlide = (currentSlide + 1) % 3; document.getElementById('banner-slider').style.transform = `translateX(-${currentSlide * 100 / 3}%)`; }, 5000); }
 
-                    document.getElementById('auth-panel').classList.add('hidden');
-                    document.getElementById('app-panel').classList.remove('hidden');
+        function toggleAuthMode(forceSignUp) { isSignUpMode = typeof forceSignUp === 'boolean' ? forceSignUp : !isSignUpMode; document.getElementById('auth-title').textContent = isSignUpMode ? 'Sign Up' : 'Login'; document.getElementById('auth-action-btn').textContent = isSignUpMode ? 'Sign Up' : 'Login'; ['auth-name','auth-phone','auth-city','auth-pincode','auth-address'].forEach(id => document.getElementById(id).classList.toggle('hidden', !isSignUpMode)); document.querySelector('.auth-card button:nth-of-type(2)').textContent = isSignUpMode ? 'Switch to Login' : 'Switch to Sign Up'; document.getElementById('auth-error').classList.add('hidden'); showInfoPage('auth-main-card'); }
+        function handleAuth() { const e = document.getElementById('auth-email').value, p = document.getElementById('auth-password').value, err = document.getElementById('auth-error'); err.classList.add('hidden'); if (isSignUpMode) { const n=document.getElementById('auth-name').value, ph=document.getElementById('auth-phone').value, c=document.getElementById('auth-city').value, pc=document.getElementById('auth-pincode').value; if(!n||!e||!p||!ph||!c||!pc) { err.textContent="Fill all fields."; err.classList.remove('hidden'); return; } auth.createUserWithEmailAndPassword(e,p).then(uc=>{ db.ref(`customers/${uc.user.uid}`).set({name:n,email:e,phone:ph,city:c,pincode:pc,address:document.getElementById('auth-address').value||'N/A',createdAt:new Date().toISOString()}); }).catch(e=>{err.textContent=e.message;err.classList.remove('hidden');}); } else { auth.signInWithEmailAndPassword(e,p).catch(e=>{err.textContent=e.message;err.classList.remove('hidden');}); } }
+        function customerLogout() { auth.signOut(); cart = []; }
+        auth.onAuthStateChanged(u => { if(u) { document.getElementById('auth-panel').classList.add('hidden'); document.getElementById('app-panel').classList.remove('hidden'); loadCustomerData(u.uid); loadNotifications(); showPanel('home-view'); } else { document.getElementById('auth-panel').classList.remove('hidden'); document.getElementById('app-panel').classList.add('hidden'); toggleAuthMode(true); } });
 
-                    if (needsProfileUpdate) {
-                        // If new user or profile incomplete, go to Profile Edit mode
-                        showPanel('profile-view'); 
-                        toggleProfileEditMode(true); 
-                        alert('Please complete your profile details (Phone, City, Pincode) to start ordering!');
-                    } else {
-                        // If fully logged in and profile complete, go to Home
-                        showPanel('home-view');
-                    }
-                })
-                .catch(error => {
-                    console.error("Error checking user profile:", error);
-                    // Fallback to home if profile check fails
-                    document.getElementById('auth-panel').classList.add('hidden');
-                    document.getElementById('app-panel').classList.remove('hidden');
-                    showPanel('home-view'); 
-                });
-        }
-        
-        // 🔑 2. Authentication Flow
-        let isSignUpMode = true; 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.getElementById('auth-panel').classList.contains('hidden')) return; 
-            toggleAuthMode(true);
-        });
-
-        // Audio Functions (Same as before)
-        function playOrderDoneSound() {
-            if (!canPlayAudio) { console.log("Order Done Sound skipped: Audio not unlocked."); return; }
-            const sound = document.getElementById('order-done-sound');
-            if (sound) { sound.currentTime = 0; sound.volume = 1.0; sound.play().catch(e => console.log("Order Done Sound playback failed:", e)); }
-        }
-        
-        function playClickSound() {
-            if (!canPlayAudio) { console.log("Click Sound skipped: Audio not unlocked."); return; }
-            const sound = document.getElementById('click-sound');
-            if (sound) { const clone = sound.cloneNode(true); clone.currentTime = 0; clone.volume = 0.5; clone.play().catch(e => console.log("Click Sound playback failed:", e)); }
-        }
-
-        function initAudioUnlock() {
-            if (canPlayAudio) return; 
-            const orderSound = document.getElementById('order-done-sound');
-            const clickSound = document.getElementById('click-sound');
-            const playPromises = [];
-            if(orderSound) { orderSound.volume = 0.01; playPromises.push(orderSound.play()); }
-            if(clickSound) { clickSound.volume = 0.01; playPromises.push(clickSound.play()); }
-            
-            Promise.all(playPromises.map(p => p.catch(e => e))).then(() => {
-                if(orderSound) { orderSound.pause(); orderSound.currentTime = 0; orderSound.volume = 1.0; }
-                if(clickSound) { clickSound.pause(); clickSound.currentTime = 0; clickSound.volume = 0.5; }
-                canPlayAudio = true;
-                document.body.removeEventListener('click', initAudioUnlock);
-                document.body.removeEventListener('touchend', initAudioUnlock);
-            });
-        }
-        
-        function startAutoSlide() {
-            const slider = document.getElementById('banner-slider');
-            if (!slider) return;
-            setInterval(() => {
-                currentSlide = (currentSlide + 1) % totalSlides;
-                slider.style.transform = `translateX(-${currentSlide * 100 / totalSlides}%)`;
-            }, 5000);
-        }
-        document.addEventListener('DOMContentLoaded', startAutoSlide);
-
-        // Info Page Toggler (Same as before)
-        function showInfoPage(pageId) {
-            document.querySelectorAll('#auth-panel > div').forEach(el => el.classList.add('hidden'));
-            document.getElementById('auth-image')?.classList.remove('hidden');
-            const targetElement = document.getElementById(pageId);
-            if(targetElement) targetElement.classList.remove('hidden');
-            if (pageId !== 'auth-main-card') {
-                document.getElementById('auth-panel').classList.remove('hidden');
-                document.getElementById('app-panel').classList.add('hidden');
-            }
-            const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
-            if (backBtn) backBtn.textContent = "← Back to Login/Sign Up"; 
-        }
-
-        function showProfileInfoPage(pageId) {
-            document.getElementById('auth-panel').classList.remove('hidden');
-            document.getElementById('app-panel').classList.add('hidden');
-            showInfoPage(pageId);
-            const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
-            if (backBtn) {
-                 backBtn.onclick = () => {
-                    playClickSound(); 
-                    document.getElementById('auth-panel').classList.add('hidden');
-                    document.getElementById('app-panel').classList.remove('hidden');
-                    showPanel('profile-view');
-                 };
-            }
-        }
-
-
-        function toggleAuthMode(forceSignUp = false) {
-            if (typeof forceSignUp === 'boolean') {
-                isSignUpMode = forceSignUp;
-            } else {
-                isSignUpMode = !isSignUpMode;
-            }
-
-            document.getElementById('auth-title').textContent = isSignUpMode ? 'Sign Up' : 'Login';
-            document.getElementById('auth-action-btn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
-            
-            document.getElementById('auth-name').classList.toggle('hidden', !isSignUpMode);
-            document.getElementById('auth-phone').classList.toggle('hidden', !isSignUpMode);
-            document.getElementById('auth-city').classList.toggle('hidden', !isSignUpMode); 
-            document.getElementById('auth-pincode').classList.toggle('hidden', !isSignUpMode); 
-            document.getElementById('auth-address').classList.toggle('hidden', !isSignUpMode);
-            
-            document.querySelector('.auth-card button:last-child').textContent = isSignUpMode ? 'Switch to Login' : 'Switch to Sign Up';
-            document.getElementById('auth-error').classList.add('hidden');
-            showInfoPage('auth-main-card');
-        }
-
-        function handleAuth() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            const errorElement = document.getElementById('auth-error');
-            errorElement.classList.add('hidden');
-
-            if (isSignUpMode) {
-                const name = document.getElementById('auth-name').value;
-                const phone = document.getElementById('auth-phone').value;
-                const city = document.getElementById('auth-city').value; 
-                const pincode = document.getElementById('auth-pincode').value; 
-                const address = document.getElementById('auth-address').value;
-                
-                if (!name || !email || !password || !phone || !city || !pincode) {
-                    errorElement.textContent = "Please fill in Name, Email, Password, Phone, City, and Pincode.";
-                    errorElement.classList.remove('hidden');
-                    return;
-                }
-                
-                auth.createUserWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        const uid = userCredential.user.uid;
-                        db.ref(`customers/${uid}`).set({
-                            name: name,
-                            email: email,
-                            phone: phone,
-                            city: city, 
-                            pincode: pincode, 
-                            address: address || 'N/A',
-                            createdAt: new Date().toISOString()
-                        });
-                        // onAuthStateChanged handles post-signup navigation (Profile check)
-                    })
-                    .catch((error) => {
-                        if (error.code === 'auth/email-already-in-use') {
-                            errorElement.textContent = "Sign Up failed: This email is already in use. Please log in or use a different email.";
-                        } else {
-                            errorElement.textContent = `Sign Up failed: ${error.message}`;
-                        }
-                        errorElement.classList.remove('hidden');
-                    });
-            } else {
-                auth.signInWithEmailAndPassword(email, password)
-                    .then(() => {
-                        // Login successful. onAuthStateChanged will handle navigation
-                    })
-                    .catch((error) => {
-                        // 1. FIX: Show user-friendly message for invalid credentials
-                        if (error.code === 'auth/invalid-email' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                            errorElement.textContent = "Login failed: Invalid email or password.";
-                        } else {
-                            errorElement.textContent = `Login failed: ${error.message}`;
-                        }
-                        errorElement.classList.remove('hidden');
-                    });
-            }
-        }
-        
-        function customerLogout() {
-            auth.signOut();
-            cart = []; // Clear cart on logout
-        }
-
-        auth.onAuthStateChanged(function(user) {
-            if (user) {
-                // This fires on successful login (email/pass)
-                loadCustomerData(user.uid);
-                loadNotifications();
-            } else {
-                document.getElementById('auth-panel').classList.remove('hidden');
-                document.getElementById('app-panel').classList.add('hidden');
-                toggleAuthMode(true); 
-            }
-        });
-
-
-        // ⚡ 3. Panel Navigation
-
+        // --- Panel Navigation ---
         function showPanel(panelId) {
-            playClickSound(); // Play click sound on panel navigation
             document.querySelectorAll('.content-panel').forEach(p => p.classList.add('hidden'));
             document.getElementById(panelId).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            document.querySelector(`.nav-item[data-panel="${panelId}"]`).classList.add('active');
-
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            const activeNav = document.querySelector(`.nav-item[data-panel="${panelId}"]`);
+            if(activeNav) activeNav.classList.add('active');
+            else if (panelId === 'cart-view') {
+                 // No bottom nav item for cart, so no active class needed
+            }
+            
             if(panelId === 'orders-view') loadOrders();
-            if(panelId === 'home-view') loadRestaurants(); 
+            if(panelId === 'home-view') loadRestaurants();
         }
+        function showInfoPage(pId) { document.querySelectorAll('#auth-panel > div').forEach(e => e.classList.add('hidden')); document.getElementById('auth-image')?.classList.remove('hidden'); document.getElementById(pId).classList.remove('hidden'); if(pId!=='auth-main-card'){ document.getElementById('auth-panel').classList.remove('hidden'); document.getElementById('app-panel').classList.add('hidden'); } }
+        function showProfileInfoPage(pId) { showInfoPage(pId); document.querySelector(`#${pId} .btn-secondary`).onclick = () => { playClickSound(); document.getElementById('auth-panel').classList.add('hidden'); document.getElementById('app-panel').classList.remove('hidden'); showPanel('profile-view'); }; }
+        function closeNotification() { document.getElementById('notification-banner').classList.add('hidden'); }
+        function loadNotifications() { db.ref('admin/notifications').limitToLast(1).on('value', s => { const n = s.val(); if(n) { document.getElementById('notification-text').textContent = `Announcement: ${Object.values(n).pop().message}`; document.getElementById('notification-banner').classList.remove('hidden'); } }); }
 
-        // --- Notifications ---
-        function closeNotification() { 
-            document.getElementById('notification-banner').classList.add('hidden');
-        }
+        // --- Profile ---
+        function loadCustomerData(uid) { db.ref(`customers/${uid}`).on('value', s => { customerProfile = s.val() || {}; if(!customerProfile.email && auth.currentUser.email) customerProfile.email = auth.currentUser.email; document.getElementById('user-greeting').textContent = `Welcome, ${customerProfile.name ? customerProfile.name.split(' ')[0] : 'Foodie'}!`; ['name','email','phone','city','pincode','address'].forEach(f => document.getElementById(`display-${f}`).textContent = customerProfile[f] || 'N/A'); ['name','phone'].forEach(f => document.getElementById(`checkout-${f}`).value = customerProfile[f] || ''); document.getElementById('checkout-address').value = customerProfile.address || ''; loadRestaurants(); }); }
+        function toggleProfileEditMode(e) { document.getElementById('profile-display-mode').classList.toggle('hidden', e); document.getElementById('profile-edit-form').classList.toggle('hidden', !e); if(e) ['name','email','phone','city','pincode','address'].forEach(f => document.getElementById(`profile-${f}`).value = customerProfile[f] || ''); }
+        function updateProfile() { const u = { name: document.getElementById('profile-name').value.trim(), phone: document.getElementById('profile-phone').value.trim(), city: document.getElementById('profile-city').value.trim(), pincode: document.getElementById('profile-pincode').value.trim(), address: document.getElementById('profile-address').value.trim() || 'N/A' }; if(!u.name||!u.phone||!u.city||!u.pincode) return alert('Fill required fields'); db.ref(`customers/${auth.currentUser.uid}`).update(u).then(() => { alert('Saved!'); toggleProfileEditMode(false); }).catch(e => alert(e.message)); }
 
-        function loadNotifications() {
-            db.ref('admin/notifications').limitToLast(1).on('value', snapshot => {
-                const notifications = snapshot.val() || {};
-                const banner = document.getElementById('notification-banner');
-                const textSpan = document.getElementById('notification-text');
-                if (Object.keys(notifications).length > 0) {
-                    const latest = Object.values(notifications).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-                    textSpan.textContent = `Global Announcement: ${latest.message}`;
-                    banner.classList.remove('hidden');
-                } else {
-                    banner.classList.add('hidden');
-                }
-            });
-        }
-        
-        // ⚡ 4. Profile Features
-
-        function toggleProfileEditMode(isEdit) {
-            document.getElementById('profile-display-mode').classList.toggle('hidden', isEdit);
-            document.getElementById('profile-edit-form').classList.toggle('hidden', !isEdit);
-            
-            if (isEdit) {
-                document.getElementById('profile-name').value = customerProfile.name || '';
-                document.getElementById('profile-email').value = customerProfile.email || auth.currentUser.email || '';
-                // Clear fields if the value is 'N/A' (new user placeholder)
-                document.getElementById('profile-phone').value = customerProfile.phone === 'N/A' ? '' : customerProfile.phone || '';
-                document.getElementById('profile-city').value = customerProfile.city === 'N/A' ? '' : customerProfile.city || ''; 
-                document.getElementById('profile-pincode').value = customerProfile.pincode === 'N/A' ? '' : customerProfile.pincode || ''; 
-                document.getElementById('profile-address').value = customerProfile.address === 'N/A' ? '' : customerProfile.address || '';
-            }
-        }
-
-        function loadCustomerData(uid) {
-            db.ref(`customers/${uid}`).on('value', snapshot => {
-                customerProfile = snapshot.val() || {};
-                
-                if (!customerProfile.email && auth.currentUser.email) {
-                    customerProfile.email = auth.currentUser.email;
-                }
-                
-                const greetingName = customerProfile.name && customerProfile.name !== 'N/A' ? customerProfile.name.split(' ')[0] : 'Foodie';
-                document.getElementById('user-greeting').textContent = `Welcome, ${greetingName}!`;
-
-
-                // Update Display fields
-                document.getElementById('display-name').textContent = customerProfile.name || 'N/A';
-                document.getElementById('display-email').textContent = customerProfile.email || 'N/A';
-                document.getElementById('display-phone').textContent = customerProfile.phone || 'N/A';
-                document.getElementById('display-city').textContent = customerProfile.city || 'N/A'; 
-                document.getElementById('display-pincode').textContent = customerProfile.pincode || 'N/A'; 
-                document.getElementById('display-address').textContent = customerProfile.address || 'N/A';
-
-                // Update checkout fields
-                document.getElementById('checkout-name').value = customerProfile.name || '';
-                document.getElementById('checkout-phone').value = customerProfile.phone || '';
-                document.getElementById('checkout-address').value = customerProfile.address || '';
-
-                // NEW FIX: After data loads, check navigation flow
-                navigateAfterAuth(uid); 
-            });
-        }
-
-        function updateProfile() {
-            const uid = auth.currentUser.uid;
-            const nameInput = document.getElementById('profile-name').value.trim();
-            const phoneInput = document.getElementById('profile-phone').value.trim();
-            const cityInput = document.getElementById('profile-city').value.trim();
-            const pincodeInput = document.getElementById('profile-pincode').value.trim();
-            const addressInput = document.getElementById('profile-address').value.trim();
-            
-            const updates = {
-                name: nameInput,
-                phone: phoneInput,
-                city: cityInput, 
-                pincode: pincodeInput, 
-                address: addressInput || 'N/A'
-            };
-
-            // Basic validation
-            if (!updates.name || !updates.phone || !updates.city || !updates.pincode) {
-                alert('Please fill in Name, Phone, City, and Pincode.');
-                return;
-            }
-
-            db.ref(`customers/${uid}`).update(updates)
-                .then(() => {
-                    alert('Profile updated successfully!');
-                    
-                    // 2. FIX: Hide edit fields and show display fields
-                    // loadCustomerData listener will update the display fields automatically
-                    toggleProfileEditMode(false); 
-                    
-                    // Navigate to Home only if coming from initial sign-up flow
-                    if (customerProfile.pincode === 'N/A' || customerProfile.phone === 'N/A') {
-                        showPanel('home-view');
-                    }
-                })
-                .catch(error => alert('Profile update failed: ' + error.message));
-        }
-
-        // ⚡ 5. Restaurant/Menu Browsing
-
-        function loadRestaurants() {
-            const list = document.getElementById('restaurants-list');
-            list.innerHTML = '<p>Loading restaurants...</p>';
-            
-            const customerPincode = customerProfile.pincode; 
-
-            if (!customerPincode || customerPincode === 'N/A') {
-                list.innerHTML = '<p style="color: red; font-weight: bold;">Please update your profile with a Pincode to see available restaurants.</p>';
-                return;
-            }
-            
-            // Listen for all restaurant data, cache it, and then filter
-            db.ref('restaurants').on('value', snapshot => {
-                allRestaurantsData = snapshot.val() || {};
-                // Debug Log
-                console.log("Customer Pincode:", customerPincode);
-                console.log("Raw Restaurants Data:", allRestaurantsData);
-                
-                filterRestaurants(document.getElementById('restaurant-search').value);
-            });
-        }
-        
-        // 7. Filter function for Search Bar
-        function filterRestaurants(searchTerm) {
-            const list = document.getElementById('restaurants-list');
-            list.innerHTML = '';
-            
-            const customerPincode = customerProfile.pincode;
-            const searchLower = searchTerm.toLowerCase();
-
-            let foundApproved = false;
-            
+        // --- Restaurants & Menu ---
+        function loadRestaurants() { const list = document.getElementById('restaurants-list'); if(!customerProfile.pincode || customerProfile.pincode === 'N/A') { list.innerHTML = '<p style="color:red;">Update Pincode in Profile to see restaurants.</p>'; return; } db.ref('restaurants').on('value', s => { allRestaurantsData = s.val() || {}; filterRestaurants(document.getElementById('restaurant-search').value); }); }
+        function filterRestaurants(term) {
+            const list = document.getElementById('restaurants-list'); list.innerHTML = '';
+            let found = false; const search = term.toLowerCase();
             Object.keys(allRestaurantsData).forEach(id => {
                 const r = allRestaurantsData[id];
-                
-                // Filter 1: By Pincode
-                const pincodeMatches = r.pincode === customerPincode;
-                
-                // Filter 2: By Approval
-                const isApproved = r.approved;
-
-                // Filter 3: By Search Term
-                const matchesSearch = r.name.toLowerCase().includes(searchLower) || 
-                                      (r.cuisine && r.cuisine.toLowerCase().includes(searchLower));
-
-                // Debug Log for each restaurant
-                console.log(`Checking ${r.name} (${r.pincode}): Approved=${isApproved}, PincodeMatch=${pincodeMatches}, SearchMatch=${matchesSearch}`);
-
-
-                if (isApproved && pincodeMatches && matchesSearch) {
-                    foundApproved = true;
-                    const isOnline = r.isOnline !== false; 
-                    const offlineClass = isOnline ? '' : 'restaurant-card-offline';
-                    const clickHandler = isOnline ? `playClickSound(); viewMenu('${id}', '${r.name}', '${r.cuisine || 'Mixed'}', '${r.imageUrl || ''}');` : '';
-                    
-                    const avgRating = r.avgRating ? r.avgRating.toFixed(1) : 'N/A'; 
-
-                    const card = `
-                        <div class="restaurant-card ${offlineClass}" onclick="${clickHandler}">
-                            <img src="${r.imageUrl || 'https://via.placeholder.com/150?text=R'}" class="restaurant-card-image" alt="${r.name} Image">
-                            <div class="restaurant-card-details">
-                                <h3>
-                                    <span>${r.name}</span>
-                                    <span class="rating-chip">⭐ ${avgRating}</span>
-                                </h3>
-                                <p>${r.cuisine || 'Mixed Cuisine'} | ${r.address || 'N/A'}</p>
-                                <p style="font-size: 0.8em; color: var(--primary-color); margin-top: 5px;">${isOnline ? 'Tap to View Menu' : 'Currently Offline'}</p>
-                            </div>
-                        </div>
-                    `;
-                    list.innerHTML += card;
+                if (r.approved && r.pincode === customerProfile.pincode && (r.name.toLowerCase().includes(search) || (r.cuisine||'').toLowerCase().includes(search))) {
+                    found = true;
+                    list.innerHTML += `<div class="restaurant-card ${r.isOnline===false?'restaurant-card-offline':''}" onclick="${r.isOnline!==false ? `playClickSound(); viewMenu('${id}','${r.name}','${r.cuisine}','${r.imageUrl}');` : ''}"><img src="${r.imageUrl||'https://via.placeholder.com/150'}" class="restaurant-card-image"><div class="restaurant-card-details"><h3><span>${r.name}</span><span class="rating-chip">⭐ ${r.avgRating?r.avgRating.toFixed(1):'N/A'}</span></h3><p>${r.cuisine||'Mixed'} | ${r.address||'N/A'}</p><p style="font-size:0.8em;color:var(--primary-color);">${r.isOnline!==false?'Tap to View Menu':'Currently Offline'}</p></div></div>`;
                 }
             });
-
-            if (!foundApproved) {
-                list.innerHTML = '<p>No approved restaurants available in your Pincode area matching your search.</p>';
-                // Debug Log
-                if (customerPincode === 'N/A') {
-                    list.innerHTML = '<p style="color: red; font-weight: bold;">Please update your profile with a Pincode to see available restaurants.</p>';
-                } else if (searchTerm && searchTerm !== '') {
-                     list.innerHTML = `<p>No approved restaurants found in Pincode ${customerPincode} matching "${searchTerm}".</p>`;
-                } else {
-                     list.innerHTML = `<p>No approved restaurants found in Pincode ${customerPincode}.</p>`;
-                }
-                
-                console.log(`Filter result: ${foundApproved ? 'Found restaurants' : 'No restaurants found'}.`);
-            }
+            if(!found) list.innerHTML = '<p>No restaurants found in your area.</p>';
         }
-
-
-        function viewMenu(restaurantId, name, cuisine, imageUrl) { 
-            currentRestaurantId = restaurantId;
-            document.getElementById('menu-restaurant-name').textContent = name;
-            document.getElementById('menu-restaurant-cuisine').textContent = cuisine;
-            document.getElementById('menu-restaurant-image').src = imageUrl || 'https://via.placeholder.com/180?text=Menu'; 
-
-            const list = document.getElementById('menu-items-list');
-            list.innerHTML = '<p>Loading menu items...</p>';
-
-            db.ref(`menus/${restaurantId}`).on('value', snapshot => {
-                const menu = snapshot.val() || {};
-                list.innerHTML = '';
-
-                Object.keys(menu).forEach(itemId => {
-                    const item = menu[itemId];
-                    if (item.available !== false) { 
-                        const card = `
-                            <div class="menu-item">
-                                <img src="${item.imageUrl || 'https://via.placeholder.com/70?text=Food'}" class="item-image" alt="Food Image">
-                                <div class="item-details">
-                                    <h4>${item.name}</h4>
-                                    <p>${item.description || 'No description'}</p>
-                                    <div class="item-price">₹${item.price.toFixed(2)}</div>
-                                </div>
-                                <button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id: '${itemId}', name: '${item.name}', price: ${item.price}, restaurantId: '${restaurantId}', restaurantName: '${name}'});">+ Add</button>
-                            </div>
-                        `;
-                        list.innerHTML += card;
-                    }
-                });
-                if (list.innerHTML === '') {
-                    list.innerHTML = '<p>No menu items available from this restaurant.</p>';
-                }
+        function viewMenu(rId, name, cuisine, img) {
+            currentRestaurantId = rId; document.getElementById('menu-restaurant-name').textContent = name; document.getElementById('menu-restaurant-cuisine').textContent = cuisine||'Mixed'; document.getElementById('menu-restaurant-image').src = img||'https://via.placeholder.com/180';
+            const list = document.getElementById('menu-items-list'); list.innerHTML = '<p>Loading menu...</p>';
+            db.ref(`menus/${rId}`).on('value', s => {
+                const m = s.val()||{}; list.innerHTML = '';
+                Object.keys(m).forEach(k => { if(m[k].available!==false) list.innerHTML += `<div class="menu-item"><img src="${m[k].imageUrl||'https://via.placeholder.com/70'}" class="item-image"><div class="item-details"><h4>${m[k].name}</h4><p>${m[k].description||''}</p><div class="item-price">₹${m[k].price.toFixed(2)}</div></div><button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id:'${k}',name:'${m[k].name}',price:${m[k].price},restaurantId:'${rId}',restaurantName:'${name}'});">+ ADD</button></div>`; });
+                if(list.innerHTML==='') list.innerHTML='<p>No items available.</p>';
             });
-
             showPanel('menu-view');
         }
 
-        // ⚡ 6. Cart and Checkout (COD only)
-
+        // --- Cart & Checkout ---
         function addToCart(item) {
-            if (cart.length > 0 && cart[0].restaurantId !== item.restaurantId) {
-                if (!confirm(`Your cart already contains items from ${cart[0].restaurantName}. Do you want to clear the current cart and add this item from ${item.restaurantName}?`)) {
-                    return;
-                }
-                cart = []; 
-            }
-
-            const existingItem = cart.find(i => i.id === item.id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ ...item, quantity: 1, restaurantName: item.restaurantName });
-            }
+            if(cart.length>0 && cart[0].restaurantId!==item.restaurantId) { if(!confirm(`Clear cart from ${cart[0].restaurantName} to add from ${item.restaurantName}?`)) return; cart=[]; }
+            const ex = cart.find(i=>i.id===item.id); if(ex) ex.quantity++; else cart.push({...item, quantity:1, restaurantName:item.restaurantName});
             updateCartDisplay();
         }
-
-        function updateCartItemQuantity(itemId, change) {
-            const item = cart.find(i => i.id === itemId);
-            if (!item) return;
-
-            item.quantity += change;
-
-            if (item.quantity <= 0) {
-                cart = cart.filter(i => i.id !== itemId);
-            }
-            
-            updateCartDisplay();
-            renderCart();
-        }
-
+        function updateCartItem(id, change) { const i=cart.find(x=>x.id===id); if(i) { i.quantity+=change; if(i.quantity<=0) cart=cart.filter(x=>x.id!==id); updateCartDisplay(); renderCart(); } }
         function updateCartDisplay() {
-            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let total = subtotal > 0 ? subtotal + DELIVERY_FEE : 0;
-
+            const sub = cart.reduce((s,i)=>s+(i.price*i.quantity),0), total = sub>0?sub+DELIVERY_FEE:0;
             document.getElementById('cart-total-display').textContent = total.toFixed(2);
-            document.getElementById('cart-subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('cart-subtotal').textContent = sub.toFixed(2);
             document.getElementById('cart-total').textContent = total.toFixed(2);
-            document.getElementById('cart-delivery-fee').textContent = DELIVERY_FEE.toFixed(2);
-
-            document.getElementById('checkout-summary-box').classList.toggle('hidden', cart.length === 0);
-            document.getElementById('cart-empty-message').classList.toggle('hidden', cart.length > 0);
-            document.getElementById('place-order-btn').disabled = cart.length === 0;
         }
-
         function renderCart() {
-            const list = document.getElementById('cart-items-list');
-            list.innerHTML = '';
-
+            const list = document.getElementById('cart-items-list'); list.innerHTML = '';
             if (cart.length === 0) {
-                 list.innerHTML = '<p style="text-align: center; margin-top: 10px;">Your cart is empty.</p>';
+                list.innerHTML = `<div class="empty-cart-state"><span class="empty-cart-icon">🛒</span><h3>Your cart is empty</h3><p>Please select items to order.</p><button class="btn btn-primary" onclick="playClickSound(); showPanel('home-view');" style="margin-top:20px;">Browse Restaurants</button></div>`;
+                document.getElementById('checkout-section').classList.add('hidden');
             } else {
-                cart.forEach(item => {
-                    const itemTotal = (item.price * item.quantity).toFixed(2);
-                    const cartItemHtml = `
-                        <div class="cart-item">
-                            <div class="cart-item-info">
-                                <h4>${item.name}</h4>
-                                <p>₹${item.price.toFixed(2)} x ${item.quantity}</p>
-                            </div>
-                            <div class="cart-item-controls">
-                                <button onclick="playClickSound(); updateCartItemQuantity('${item.id}', -1);">-</button>
-                                <span>${item.quantity}</span>
-                                <button onclick="playClickSound(); updateCartItemQuantity('${item.id}', 1);">+</button>
-                            </div>
-                             <div style="font-weight: bold;">₹${itemTotal}</div>
-                        </div>
-                    `;
-                    list.innerHTML += cartItemHtml;
-                });
+                cart.forEach(i => list.innerHTML += `<div class="cart-item"><div class="cart-item-info"><h4>${i.name}</h4><p>₹${i.price.toFixed(2)}</p></div><div class="cart-item-controls"><button onclick="playClickSound(); updateCartItem('${i.id}',-1)">-</button><span>${i.quantity}</span><button onclick="playClickSound(); updateCartItem('${i.id}',1)">+</button></div><div style="font-weight:bold;min-width:60px;text-align:right;">₹${(i.price*i.quantity).toFixed(2)}</div></div>`);
+                document.getElementById('checkout-section').classList.remove('hidden');
             }
             updateCartDisplay();
         }
-
         function showCart() {
-            if (!customerProfile.pincode || customerProfile.pincode === 'N/A') {
-                 alert('Please update your profile with a Pincode before placing an order.');
-                 showPanel('profile-view');
-                 return;
-            }
-
+            if (!customerProfile.pincode || customerProfile.pincode === 'N/A') { alert('Update Pincode first.'); return showPanel('profile-view'); }
             renderCart();
-            // Pre-fill checkout details
-            document.getElementById('checkout-name').value = customerProfile.name || '';
-            document.getElementById('checkout-phone').value = customerProfile.phone || '';
-            document.getElementById('checkout-address').value = customerProfile.address || '';
-            
-            document.getElementById('cart-view').classList.remove('hidden');
+            showPanel('cart-view');
         }
-
-        function hideCart() {
-            document.getElementById('cart-view').classList.add('hidden');
+        function goBackFromCart() {
+             // Go back to the last opened panel before cart, or home-view
+             const activeNav = document.querySelector('.nav-item.active');
+             if (activeNav && activeNav.dataset.panel === 'menu-view') showPanel('menu-view');
+             else if (currentRestaurantId) viewMenu(currentRestaurantId, document.getElementById('menu-restaurant-name').textContent, document.getElementById('menu-restaurant-cuisine').textContent, document.getElementById('menu-restaurant-image').src);
+             else showPanel('home-view');
         }
-
         function placeOrder() {
-            if (cart.length === 0) {
-                alert('Your cart is empty.');
-                return;
-            }
-
-            const name = document.getElementById('checkout-name').value.trim();
-            const phone = document.getElementById('checkout-phone').value.trim();
-            const address = document.getElementById('checkout-address').value.trim();
-
-            if (!name || !phone || !address) {
-                alert('Please fill in your name, phone, and delivery address.');
-                return;
-            }
-            
-            if (!customerProfile.pincode || customerProfile.pincode === 'N/A') {
-                 alert('Error: Missing Pincode in profile. Please update your profile.');
-                 return;
-            }
-
-
-            const restaurantId = cart[0].restaurantId;
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const totalAmount = subtotal + DELIVERY_FEE;
-            const orderItems = cart.map(item => ({
-                itemId: item.id,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity
-            }));
-
-            const newOrderRef = db.ref('orders').push();
-            const orderId = newOrderRef.key;
-
-            const orderData = {
-                orderId: orderId,
-                customerUid: auth.currentUser.uid,
-                restaurantId: restaurantId,
-                deliveryUid: '', 
-                items: orderItems,
-                subtotal: subtotal,
-                deliveryFee: DELIVERY_FEE,
-                totalAmount: totalAmount,
-                customerName: name,
-                address: address,
-                phone: phone,
-                city: customerProfile.city, 
-                pincode: customerProfile.pincode, 
-                paymentMethod: 'COD', 
-                status: 'PLACED', 
-                locationLink: '', 
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-
-            newOrderRef.set(orderData)
-                .then(() => {
-                    playOrderDoneSound(); 
-                    alert(`Order #${orderId.substring(0, 8)} placed successfully! Payment: Cash on Delivery.`);
-                    cart = []; 
-                    hideCart();
-                    loadOrders(); 
-                    showPanel('orders-view');
-                })
-                .catch(error => alert('Failed to place order: ' + error.message));
+            if(cart.length===0) return alert('Cart is empty');
+            const n=document.getElementById('checkout-name').value.trim(), p=document.getElementById('checkout-phone').value.trim(), a=document.getElementById('checkout-address').value.trim();
+            if(!n||!p||!a) return alert('Fill delivery details.');
+            const sub=cart.reduce((s,i)=>s+(i.price*i.quantity),0), total=sub+DELIVERY_FEE, rId=cart[0].restaurantId;
+            const orderRef = db.ref('orders').push();
+            orderRef.set({
+                orderId: orderRef.key, customerUid: auth.currentUser.uid, restaurantId: rId, deliveryUid: '',
+                items: cart.map(i=>({itemId:i.id,name:i.name,price:i.price,quantity:i.quantity})),
+                subtotal: sub, deliveryFee: DELIVERY_FEE, totalAmount: total,
+                customerName: n, phone: p, address: a, city: customerProfile.city, pincode: customerProfile.pincode,
+                paymentMethod: 'COD', status: 'PLACED', createdAt: new Date().toISOString()
+            }).then(()=>{
+                playOrderDoneSound(); alert('Order Placed Successfully (COD)!'); cart=[];
+                showPanel('orders-view');
+            }).catch(e=>alert(e.message));
         }
 
-        // ⚡ 7. Order History and Tracking
-
-        // Helper function to get the current step based on status
-        function getTrackingStep(status) {
-            if (status === 'DELIVERED') return 4;
-            if (status === 'PICKED_UP' || status === 'OUT_FOR_DELIVERY') return 3; // Bike Step
-            if (status === 'READY_FOR_PICKUP' || status === 'PREPARING') return 2; // Preparing/Ready Step (Step 2)
-            if (status === 'ACCEPTED' || status === 'PLACED') return 1; // Restaurant Initial Step
-            return 0; // CANCELLED
-        }
-
-        // Helper function to get the progress bar width percentage
-        function getTrackingProgress(status) {
-            const step = getTrackingStep(status);
-            if (step === 0) return '0%';
-            if (step === 1) return '0%'; // Just activated first step, line hasn't moved yet
-            if (step === 2) return '33%'; 
-            if (step === 3) return '67%'; 
-            if (step === 4) return '100%'; 
-            return '0%';
-        }
-
+        // --- Orders ---
         function loadOrders() {
-            const list = document.getElementById('orders-list');
-            list.innerHTML = '<p>Loading order history...</p>';
-            const customerUid = auth.currentUser.uid;
-            
-            let restaurantsCache = {};
-            db.ref('restaurants').once('value', resSnapshot => {
-                restaurantsCache = resSnapshot.val() || {};
-            
-                let deliveryCache = {};
-                db.ref('deliveryPartners').once('value', deliverySnapshot => {
-                    deliveryCache = deliverySnapshot.val() || {};
-
-                    db.ref('orders').orderByChild('customerUid').equalTo(customerUid).on('value', snapshot => {
-                        const orders = snapshot.val() || {};
-                        list.innerHTML = '';
-                        const orderArray = Object.values(orders).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
-
-                        if (orderArray.length === 0) {
-                            list.innerHTML = '<p>You have not placed any orders yet.</p>';
-                            return;
-                        }
-
-                        orderArray.forEach(order => {
-                            const restaurantName = restaurantsCache[order.restaurantId]?.name || 'Unknown Restaurant';
-                            const deliveryBoyName = order.deliveryUid ? deliveryCache[order.deliveryUid]?.name || 'Delivery Boy Assigned' : 'Awaiting Assignment';
-                            const date = new Date(order.createdAt).toLocaleDateString();
-                            const currentStep = getTrackingStep(order.status);
-                            const progressWidth = getTrackingProgress(order.status);
-                            
-                            const itemsSummary = order.items.map(i => `${i.name} x${i.quantity}`).join(', ');
-                            
-                            const deliveryInfo = (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') ?
-                                `<p style="font-size: 0.9em; margin-top: 5px;">Delivery: <strong>${deliveryBoyName}</strong></p>` : '';
-
-                            const locationLink = (order.locationLink && (order.status === 'PICKED_UP' || order.status === 'OUT_FOR_DELIVERY')) ? 
-                                `<p style="margin-top: 5px;"><a href="${order.locationLink}" target="_blank" style="color: blue; text-decoration: underline;">Track Delivery Live</a></p>` : '';
-
-                            // Tracking Bar HTML 
-                            const trackingBarHTML = `
-                                <div class="tracking-bar" style="--progress-width: ${progressWidth};">
-                                    <div class="tracking-step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}" style="margin-left:-15px;">
-                                        <span class="tracking-icon">🍽️</span> 
-                                        <span>Restaurant</span>
-                                    </div>
-                                    <div class="tracking-step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}">
-                                        <span class="tracking-icon">🍳</span> 
-                                        <span>Preparing</span>
-                                    </div>
-                                    <div class="tracking-step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'completed' : ''}">
-                                        <span class="tracking-icon">🛵</span> 
-                                        <span>Bike</span>
-                                    </div>
-                                    <div class="tracking-step ${currentStep >= 4 ? 'active' : ''}" style="margin-right:-15px;">
-                                        <span class="tracking-icon">🏠</span> 
-                                        <span>Home</span>
-                                    </div>
-                                </div>
-                            `;
-
-                            // Star Rating System
-                            const existingRating = order.rating || 0;
-                            const ratingSystem = (order.status === 'DELIVERED' && !order.rating) ? 
-                                `<div class="rating-box" id="rating-box-${order.orderId}">
-                                    <p style="font-size: 0.9em; margin-bottom: 5px;">Rate your experience:</p>
-                                    <div class="stars">
-                                        <input type="radio" id="star5-${order.orderId}" name="rating-${order.orderId}" value="5" /><label for="star5-${order.orderId}" onclick="playClickSound()">★</label>
-                                        <input type="radio" id="star4-${order.orderId}" name="rating-${order.orderId}" value="4" /><label for="star4-${order.orderId}" onclick="playClickSound()">★</label>
-                                        <input type="radio" id="star3-${order.orderId}" name="rating-${order.orderId}" value="3" /><label for="star3-${order.orderId}" onclick="playClickSound()">★</label>
-                                        <input type="radio" id="star2-${order.orderId}" name="rating-${order.orderId}" value="2" /><label for="star2-${order.orderId}" onclick="playClickSound()">★</label>
-                                        <input type="radio" id="star1-${order.orderId}" name="rating-${order.orderId}" value="1" /><label for="star1-${order.orderId}" onclick="playClickSound()">★</label>
-                                    </div>
-                                    <button class="btn btn-primary btn-small" onclick="playClickSound(); submitRating('${order.orderId}');">Submit Rating</button>
-                                </div>` : (order.status === 'DELIVERED' ? 
-                                    `<p style="font-size: 0.9em; color: green; margin-top: 5px;">Rating: ⭐${existingRating}/5</p>` : 
-                                    '');
-
-                            const reorderButton = (order.status === 'DELIVERED' || order.status === 'CANCELLED') ?
-                                `<button class="btn btn-secondary btn-small" style="margin-top: 10px;" onclick="playClickSound(); reorder('${order.orderId}');">Reorder</button>` : '';
-
-                            const statusDisplay = order.status === 'CANCELLED' ? '' : trackingBarHTML;
-                            const trackingMargin = order.status === 'CANCELLED' ? '' : 'style="margin-top: 10px;"';
-
-                            const orderCard = `
-                                <div class="order-card">
-                                    <div class="order-header">
-                                        <h4>Order #${order.orderId.substring(0, 8)}</h4>
-                                        <span class="order-status ${order.status.replace(/[^a-zA-Z]/g, '')}">${order.status}</span>
-                                    </div>
-                                    <p style="font-size: 0.9em;">From: <strong>${restaurantName}</strong> | Date: ${date}</p>
-                                    ${statusDisplay}
-                                    <p ${trackingMargin} style="font-size: 0.9em; color: #777;">Items: ${itemsSummary}</p>
-                                    <p style="font-weight: bold; color: var(--primary-color);">Total: ₹${order.totalAmount.toFixed(2)} (COD)</p>
-                                    ${deliveryInfo}
-                                    ${locationLink}
-                                    ${ratingSystem}
-                                    ${reorderButton}
-                                </div>
-                            `;
-                            list.innerHTML += orderCard;
-                        });
+            const list = document.getElementById('orders-list'); list.innerHTML = '<p>Loading...</p>';
+            db.ref('restaurants').once('value', rs => { const rData = rs.val()||{};
+                db.ref('orders').orderByChild('customerUid').equalTo(auth.currentUser.uid).on('value', s => {
+                    const oStr = s.val()||{}; list.innerHTML = '';
+                    const oArr = Object.values(oStr).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                    if(oArr.length===0) return list.innerHTML='<p>No orders yet.</p>';
+                    oArr.forEach(o => {
+                        const step = ['CANCELLED','PLACED','PREPARING','OUT_FOR_DELIVERY','DELIVERED'].indexOf(o.status.replace('ACCEPTED','PLACED').replace('READY_FOR_PICKUP','PREPARING').replace('PICKED_UP','OUT_FOR_DELIVERY'));
+                        const prog = step<=0?'0%':step===1?'10%':step===2?'40%':step===3?'70%':'100%';
+                        const trackHTML = o.status==='CANCELLED'?'':`<div class="tracking-bar" style="--progress-width:${prog}"><div class="tracking-step ${step>=1?'active':''}"><span class="tracking-icon">🍽️</span>Restaurant</div><div class="tracking-step ${step>=2?'active':''}"><span class="tracking-icon">🍳</span>Preparing</div><div class="tracking-step ${step>=3?'active':''}"><span class="tracking-icon">🛵</span>Out</div><div class="tracking-step ${step>=4?'active':''}"><span class="tracking-icon">🏠</span>Delivered</div></div>`;
+                        const ratingHTML = (o.status==='DELIVERED' && !o.rating) ? `<div style="margin-top:10px;border-top:1px dashed #eee;padding-top:10px;"><p>Rate:</p><div class="stars"><input type="radio" id="s5-${o.orderId}" name="r-${o.orderId}" value="5"/><label for="s5-${o.orderId}" onclick="playClickSound()">★</label><input type="radio" id="s4-${o.orderId}" name="r-${o.orderId}" value="4"/><label for="s4-${o.orderId}" onclick="playClickSound()">★</label><input type="radio" id="s3-${o.orderId}" name="r-${o.orderId}" value="3"/><label for="s3-${o.orderId}" onclick="playClickSound()">★</label><input type="radio" id="s2-${o.orderId}" name="r-${o.orderId}" value="2"/><label for="s2-${o.orderId}" onclick="playClickSound()">★</label><input type="radio" id="s1-${o.orderId}" name="r-${o.orderId}" value="1"/><label for="s1-${o.orderId}" onclick="playClickSound()">★</label></div><button class="btn btn-primary btn-small" onclick="submitRating('${o.orderId}')">Submit</button></div>` : (o.rating?`<p style="color:green;font-weight:bold;">You rated: ⭐${o.rating}</p>`:'');
+                        list.innerHTML += `<div class="order-card"><div class="order-header"><h4>#${o.orderId.substring(0,8)}</h4><span class="order-status ${o.status.replace(/_/g,'')}">${o.status.replace(/_/g,' ')}</span></div><p>From: <strong>${rData[o.restaurantId]?.name||'Restaurant'}</strong> | ₹${o.totalAmount.toFixed(2)}</p>${trackHTML}<p style="font-size:0.9em;color:#777;margin-top:5px;">${o.items.map(i=>`${i.name} x${i.quantity}`).join(', ')}</p>${ratingHTML}</div>`;
                     });
                 });
             });
         }
-        
-        // --- Submit Rating with Restaurant Avg Rating Update ---
-        function submitRating(orderId) {
-            const ratingInput = document.querySelector(`input[name="rating-${orderId}"]:checked`);
-            if (!ratingInput) {
-                alert('Please select a star rating before submitting.');
-                return;
-            }
-
-            const ratingValue = parseInt(ratingInput.value);
-
-            // 1. Get the order details
-            db.ref(`orders/${orderId}`).once('value', orderSnapshot => {
-                const order = orderSnapshot.val();
-                if (!order) {
-                    alert('Order not found.');
-                    return;
-                }
-                const restaurantId = order.restaurantId;
-
-                // 2. Update the specific order's rating
-                db.ref(`orders/${orderId}`).update({
-                    rating: ratingValue,
-                    ratingTimestamp: new Date().toISOString()
-                })
-                .then(() => {
-                    // 3. Recalculate Average Rating for the Restaurant
-                    return db.ref('orders')
-                        .orderByChild('restaurantId').equalTo(restaurantId)
-                        .once('value');
-                })
-                .then(ordersSnapshot => {
-                    let totalRatingSum = 0;
-                    let ratedOrderCount = 0;
-                    
-                    ordersSnapshot.forEach(childSnapshot => {
-                        const o = childSnapshot.val();
-                        // Only count delivered orders that have a rating
-                        if (o.status === 'DELIVERED' && o.rating) { 
-                            totalRatingSum += o.rating;
-                            ratedOrderCount++;
-                        }
-                    });
-
-                    const newAvgRating = ratedOrderCount > 0 ? totalRatingSum / ratedOrderCount : null;
-
-                    // 4. Update the Restaurant's avgRating
-                    return db.ref(`restaurants/${restaurantId}`).update({
-                        avgRating: newAvgRating
-                    });
-                })
-                .then(() => {
-                    alert(`Rating of ${ratingValue} submitted successfully! Restaurant rating updated.`);
-                    loadOrders(); // Refresh orders view
-                })
-                .catch(error => {
-                    alert('Failed to submit rating or update restaurant rating: ' + error.message);
-                });
-            });
-        }
-
-        function reorder(orderId) {
-            db.ref(`orders/${orderId}`).once('value', snapshot => {
-                const originalOrder = snapshot.val();
-                if (!originalOrder) {
-                    alert('Original order not found.');
-                    return;
-                }
-                
-                cart = [];
-                const restaurantId = originalOrder.restaurantId;
-                
-                db.ref(`restaurants/${restaurantId}`).once('value', resSnapshot => {
-                    const restaurantName = resSnapshot.val()?.name || 'Restaurant';
-
-                    originalOrder.items.forEach(item => {
-                        cart.push({
-                            id: item.itemId,
-                            name: item.name,
-                            price: item.price,
-                            quantity: item.quantity,
-                            restaurantId: restaurantId,
-                            restaurantName: restaurantName
-                        });
-                    });
-
-                    alert(`Order items from ${restaurantName} added to cart. Review and checkout.`);
-                    showPanel('home-view'); 
-                    showCart();
-                });
-            });
-        }
-        
+        function submitRating(oId) { const v = document.querySelector(`input[name="r-${oId}"]:checked`)?.value; if(!v) return alert('Select stars'); db.ref(`orders/${oId}`).update({rating:parseInt(v)}).then(()=>{ alert('Thanks for rating!'); loadOrders(); }); }
     </script>
 </body>
 </html>
