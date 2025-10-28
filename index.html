@@ -8,15 +8,20 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <!-- Google Fonts for better Title (Goal 3) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* Mobile-First, Responsive, Modern UI */
         :root {
-            --primary-color: #f75d5d; /* Vibrant Foodie Red/Pink */
+            /* 4. Updated Food-Related Gradient/2D/3D Colors */
+            --primary-color: #ff6347; /* Vibrant Tomato Red/Orange */
             --secondary-color: #555;
-            --background-color: #eef2f5; /* Light, soft background for 2D/3D feel */
+            --background-start: #fceabb; /* Light Food Gradient Start */
+            --background-end: #f8b500; /* Light Food Gradient End */
+            --background-color: #eef2f5; 
             --card-background: #ffffff;
             --border-radius: 12px;
-            --shadow: 0 8px 20px rgba(0, 0, 0, 0.12); /* Enhanced shadow for depth */
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Enhanced shadow for depth */
             --text-color: #333;
             --step-active-color: #4CAF50; /* Green for active step */
             --step-inactive-color: #ccc;
@@ -26,14 +31,26 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif; /* Changed default font */
             color: var(--text-color);
         }
 
         body {
-            background-color: var(--background-color);
+            /* 4. Gradient Background */
+            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%);
             line-height: 1.6;
             padding-bottom: 60px; /* Space for bottom nav */
+            min-height: 100vh;
+        }
+
+        /* 3. Title Style */
+        .app-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 28px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
         }
 
         /* Utility Classes & Buttons */
@@ -48,7 +65,7 @@
             border: none;
             border-radius: var(--border-radius);
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             font-weight: bold;
             text-align: center;
             width: 100%;
@@ -58,41 +75,63 @@
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
-            box-shadow: 0 4px 10px rgba(247, 93, 93, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
         }
-        .btn-primary:hover { background-color: #e05454; }
+        .btn-primary:hover { 
+            background-color: #e05c44; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 99, 71, 0.6);
+        }
         .btn-secondary {
             background-color: #eee;
             color: var(--secondary-color);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        .btn-small {
-            padding: 8px 12px;
-            width: auto;
-            border-radius: 6px;
-            font-size: 0.9em;
-            margin: 0;
+        .btn-secondary:hover {
+            background-color: #ddd;
+            transform: translateY(-1px);
         }
-        /* Info Links Style (Updated for vertical buttons in Profile View - Request 1) */
+        /* 2. Google Sign-In Button Style */
+        .btn-google {
+            background-color: #4285F4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+        }
+        .btn-google:hover {
+             background-color: #3b7ad6;
+             transform: translateY(-2px);
+             box-shadow: 0 6px 20px rgba(66, 133, 244, 0.6);
+        }
+        .btn-google-icon::before {
+            content: "\1F310"; /* Globe icon as a placeholder for G */
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        /* Info Links Style */
         .info-link-btn {
             display: block;
             width: 100%;
             padding: 12px 15px; 
             margin-bottom: 8px;
-            border: 1px solid #ddd;
+            border: none;
             border-radius: var(--border-radius); 
-            background-color: #f9f9f9;
-            text-align: left; /* Edited: Align text to the left */
+            background-color: var(--card-background);
+            text-align: left;
             text-decoration: none;
             font-size: 16px; 
             font-weight: bold; 
             color: var(--secondary-color); 
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.2s, transform 0.1s;
         }
         .info-link-btn:hover {
-            background-color: #ffeaea;
+            background-color: #fffaf0;
             border-color: var(--primary-color);
+            transform: translateX(3px);
         }
         .info-link { /* Kept for login screen's inline links */
             display: inline-block;
@@ -110,28 +149,7 @@
             box-shadow: var(--shadow);
             margin-top: 20px;
         }
-        .info-page h3 {
-            color: var(--primary-color);
-            margin-top: 15px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            font-size: 1.1em;
-        }
-        .info-page ul {
-            margin-left: 20px;
-            list-style-type: disc;
-        }
-        .info-page li {
-            font-size: 0.9em;
-            margin-bottom: 5px;
-        }
-        .info-page p {
-            font-size: 0.95em;
-            margin-bottom: 10px;
-        }
-
-
+        
         /* Auth/Login Screens */
         #auth-panel {
             display: flex;
@@ -246,6 +264,17 @@
             flex-shrink: 0;
         }
         
+        /* Search Bar Style */
+        #restaurant-search {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
         /* Home/Restaurant List */
         .restaurant-card {
             background: var(--card-background);
@@ -254,10 +283,10 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             overflow: hidden; 
         }
-        .restaurant-card:hover { transform: translateY(-3px); }
+        .restaurant-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); }
         .restaurant-card-image { 
             width: 100%;
             height: 150px; 
@@ -291,265 +320,6 @@
             align-items: center;
             line-height: 1.2;
         }
-
-
-        /* Menu View */
-        #menu-restaurant-image { 
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        #menu-view h2 { text-align: center; }
-        .menu-item {
-            display: flex;
-            align-items: center;
-            background: var(--card-background);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
-        }
-        .item-image {
-            width: 70px;
-            height: 70px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-        .item-details { flex-grow: 1; }
-        .item-details h4 { margin-bottom: 3px; font-size: 1.1em; }
-        .item-details p { font-size: 0.8em; color: #777; }
-        .item-price { font-weight: bold; color: var(--primary-color); margin-top: 5px; }
-        .add-to-cart-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-left: 10px;
-            flex-shrink: 0;
-        }
-
-        /* Cart View */
-        #cart-view {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: white;
-            z-index: 1001;
-            overflow-y: auto; 
-        }
-        #cart-view .container {
-            padding-top: 20px;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .cart-item-info h4 { font-size: 1em; }
-        .cart-item-controls { display: flex; align-items: center; }
-        .cart-item-controls button {
-            background: none;
-            border: 1px solid #ddd;
-            padding: 5px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-        .checkout-summary {
-            background: #fff3f3;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-top: 20px;
-        }
-        .checkout-summary div {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            line-height: 1; 
-        }
-        .checkout-summary span:first-child { flex-grow: 1; text-align: left; }
-        .checkout-summary span:last-child { flex-grow: 0; text-align: right; }
-
-        /* Profile View */
-        .profile-card {
-            background: var(--card-background);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-        .profile-field { 
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .profile-field-label {
-            font-weight: bold;
-            color: var(--secondary-color);
-        }
-        .profile-field-value {
-            color: var(--text-color);
-        }
-        #profile-edit-form input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        
-        /* Orders View */
-        .order-card {
-            background: var(--card-background);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .order-status {
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            font-weight: bold;
-            color: white;
-            background-color: #ccc; /* Default */
-        }
-        /* Status Colors are already set above */
-
-        /* Order Tracking Bar */
-        .tracking-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0 10px 0;
-            position: relative;
-            padding: 0 10px;
-        }
-        .tracking-bar::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 15px;
-            right: 15px;
-            height: 3px;
-            background: var(--step-inactive-color);
-            transform: translateY(-50%);
-            z-index: 0;
-        }
-        .tracking-bar::after { /* Green Progress Line */
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 15px;
-            width: var(--progress-width, 0%);
-            height: 3px;
-            background: var(--step-active-color);
-            transform: translateY(-50%);
-            z-index: 1;
-            transition: width 0.5s ease;
-        }
-        .tracking-step {
-            position: relative;
-            z-index: 2; 
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 0.75em; 
-            font-weight: bold;
-            color: var(--step-inactive-color);
-            transition: color 0.3s ease;
-        }
-        .tracking-icon {
-            width: 30px;
-            height: 30px;
-            line-height: 30px;
-            border-radius: 50%;
-            background: var(--card-background);
-            border: 3px solid var(--step-inactive-color);
-            margin-bottom: 5px;
-            transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-            font-size: 1.2em;
-        }
-        .tracking-step.active {
-            color: var(--text-color);
-        }
-        .tracking-step.active .tracking-icon {
-            border-color: var(--step-active-color);
-            color: var(--step-active-color);
-        }
-        .tracking-step.completed {
-            color: var(--text-color);
-        }
-        .tracking-step.completed .tracking-icon {
-            background: var(--step-active-color);
-            color: white;
-            border-color: var(--step-active-color);
-        }
-        
-        /* Star Rating Styles */
-        .rating-box {
-            margin-top: 10px;
-            text-align: center;
-        }
-        .stars {
-            unicode-bidi: bidi-override;
-            direction: rtl;
-            text-align: center;
-            font-size: 24px;
-            display: inline-block;
-        }
-        .stars > input { display: none; }
-        .stars > label {
-            display: inline-block;
-            padding: 0 5px;
-            cursor: pointer;
-            color: #ccc;
-        }
-        .stars > label:hover,
-        .stars > label:hover ~ label,
-        .stars > input:checked ~ label {
-            color: gold;
-        }
-
-        .alert {
-            background-color: #f44336;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            text-align: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .alert-close-btn { 
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 10px;
-        }
     </style>
 </head>
 <body onclick="initAudioUnlock()"> 
@@ -566,19 +336,27 @@
         
         <!-- Main Login Card -->
         <div class="auth-card" id="auth-main-card">
-            <h2 id="auth-title">Customer Login</h2>
+            <!-- 5. Title Change -->
+            <h2 id="auth-title">Sign Up</h2> 
             <input type="email" id="auth-email" placeholder="Email" required>
             <input type="password" id="auth-password" placeholder="Password" required>
             
-            <input type="text" id="auth-name" placeholder="Name" class="hidden" required>
-            <input type="text" id="auth-phone" placeholder="Phone" class="hidden" required>
-            <input type="text" id="auth-city" placeholder="City" class="hidden" required> 
-            <input type="text" id="auth-pincode" placeholder="Pincode" class="hidden" required> 
-            <input type="text" id="auth-address" placeholder="Address (Optional)" class="hidden">
+            <input type="text" id="auth-name" placeholder="Name" required> <!-- 1. Default to Sign Up -->
+            <input type="text" id="auth-phone" placeholder="Phone" required> <!-- 1. Default to Sign Up -->
+            <input type="text" id="auth-city" placeholder="City" required> <!-- 1. Default to Sign Up -->
+            <input type="text" id="auth-pincode" placeholder="Pincode" required> <!-- 1. Default to Sign Up -->
+            <input type="text" id="auth-address" placeholder="Address (Optional)"> <!-- 1. Default to Sign Up -->
             
-            <button class="btn btn-primary" id="auth-action-btn" onclick="playClickSound(); handleAuth();">Login</button>
+            <button class="btn btn-primary" id="auth-action-btn" onclick="playClickSound(); handleAuth();">Sign Up</button>
             <p id="auth-error" style="color: var(--primary-color); margin-top: 15px;" class="hidden"></p>
-            <button class="btn btn-secondary" onclick="playClickSound(); toggleAuthMode();">Switch to Sign Up</button>
+
+            <!-- 2. Google Sign-In Button -->
+            <div style="margin: 15px 0; font-size: 0.9em; color: #777;">OR</div>
+            <button class="btn btn-google" onclick="playClickSound(); handleGoogleSignIn();">
+                <span class="btn-google-icon"></span> Continue with Google
+            </button>
+            
+            <button class="btn btn-secondary" onclick="playClickSound(); toggleAuthMode();">Switch to Login</button>
 
              <div style="margin-top: 20px; text-align: center;">
                 <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('about-page');">About</a> | 
@@ -594,7 +372,7 @@
             <p>We bring your favorite food from nearby restaurants, hotels, and food stalls straight to your doorstep — fresh, fast, and affordable.</p>
             <p>Soyfa Food is a private app created to make food ordering simple for local people. We focus on providing fast delivery, live order tracking, and genuine restaurant listings.</p>
             <p>Our goal is to support local food businesses and provide customers with a smooth food delivery experience.</p>
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
         </div>
 
         <div id="privacy-page" class="info-page hidden">
@@ -634,7 +412,7 @@
             <h3>Changes to policy</h3>
             <p>We may update this policy; we will post the effective date at the top and notify users where reasonable.</p>
             
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
         </div>
 
         <div id="terms-page" class="info-page hidden">
@@ -671,7 +449,7 @@
             <h3>Governing law</h3>
             <p>These terms are governed by the laws of India. Any disputes will be under the appropriate Indian jurisdiction.</p>
 
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
         </div>
 
          <div id="cancellation-page" class="info-page hidden">
@@ -688,7 +466,7 @@
             <p>For prepaid orders that are cancelled or where a fault in service (e.g., missing items) is confirmed: Refunds for online payments are processed to the original payment method and may take 5-7 business days to reflect.</p>
             <p>For Cash on Delivery (COD) orders, any necessary refund will be handled directly by the delivery partner or credited to your account for future use.</p>
 
-            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login</button>
+            <button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back to Login/Sign Up</button>
         </div>
 
     </div>
@@ -698,7 +476,8 @@
         
         <!-- Header -->
         <div class="container" style="padding-bottom: 0;">
-            <h1 style="color: var(--primary-color); margin-top: 10px;">Soyfa Food</h1>
+            <!-- 3. Improved Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
             <!-- Notification with Close Button -->
             <p id="notification-banner" class="alert hidden">
                 <span id="notification-text"></span>
@@ -709,6 +488,12 @@
         <!-- 2.1 Home View: Browse Restaurants -->
         <div id="home-view" class="content-panel container">
             
+            <!-- 6. User Greeting -->
+            <h2 id="user-greeting" style="color: var(--primary-color); margin-bottom: 20px;">Welcome!</h2>
+
+            <!-- 7. Search Bar -->
+            <input type="text" id="restaurant-search" placeholder="Search by restaurant name or cuisine..." onkeyup="filterRestaurants(this.value);">
+
             <!-- Banner Slider Wrapper -->
             <div id="slider-wrapper">
                 <div id="banner-slider">
@@ -726,6 +511,7 @@
         </div>
 
         <!-- 2.2 Menu View (Dynamic) -->
+        <!-- ... (Menu View content remains the same) ... -->
         <div id="menu-view" class="content-panel container hidden">
             <!-- Menu Image -->
             <img id="menu-restaurant-image" src="" alt="Restaurant Image">
@@ -739,6 +525,7 @@
         </div>
 
         <!-- 2.3 Orders View: History and Tracking -->
+        <!-- ... (Orders View content remains the same) ... -->
         <div id="orders-view" class="content-panel container hidden">
             <h2>My Orders</h2>
             <div id="orders-list">
@@ -748,6 +535,7 @@
         </div>
 
         <!-- 2.4 Profile View -->
+        <!-- ... (Profile View content remains the same) ... -->
         <div id="profile-view" class="content-panel container hidden">
             <h2>My Profile</h2>
             <div class="profile-card">
@@ -793,7 +581,7 @@
                     <button class="btn btn-secondary" onclick="playClickSound(); toggleProfileEditMode(false);">Cancel</button>
                 </div>
                 
-                <!-- Info Links - Vertical Buttons (Request 1) -->
+                <!-- Info Links - Vertical Buttons -->
                 <div style="margin-top: 30px; text-align: left;">
                     <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('about-page');">About Soyfa Food</a> 
                     <a href="#" class="info-link-btn" onclick="playClickSound(); showProfileInfoPage('privacy-page');">Privacy Policy</a> 
@@ -806,6 +594,7 @@
         </div>
 
         <!-- Cart/Checkout View (Modal/Overlay) -->
+        <!-- ... (Cart View content remains the same) ... -->
         <div id="cart-view" class="hidden">
             <div class="container">
                 <h2 style="color: var(--primary-color);">Your Cart</h2>
@@ -871,6 +660,45 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // ** CRITICAL: Handle Google Redirect Result immediately on page load **
+        auth.getRedirectResult().then((result) => {
+            if (result.credential) {
+                // This means the user just came back from a successful Google sign-in redirect
+                const user = result.user;
+                const uid = user.uid;
+                const email = user.email;
+                const name = user.displayName;
+                
+                // Check if user already exists in 'customers' DB
+                db.ref(`customers/${uid}`).once('value')
+                    .then(snapshot => {
+                        if (!snapshot.exists()) {
+                            // First-time sign-up via Google, save minimal data
+                            db.ref(`customers/${uid}`).set({
+                                name: name || 'Google User',
+                                email: email,
+                                phone: 'N/A',
+                                city: 'N/A', 
+                                pincode: 'N/A', 
+                                address: 'N/A',
+                                createdAt: new Date().toISOString()
+                            });
+                            // The onAuthStateChanged listener will now take over and show the app.
+                            alert('Welcome! Please complete your profile (Phone, City, Pincode) in the Profile tab.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error setting up Google user profile:", error);
+                        alert("An error occurred during profile setup.");
+                    });
+            }
+        }).catch(error => {
+            // This is for general redirect errors, not the initial environment check
+            console.error("Google Redirect Result Error:", error);
+            // We do NOT show an alert here, as it might interfere with the main auth flow
+        });
+
+
         // GLOBAL STATE
         let currentRestaurantId = null;
         let customerProfile = {};
@@ -879,12 +707,20 @@
         let currentSlide = 0;
         const totalSlides = 3;
         let canPlayAudio = false; // Audio Unlock Flag
+        let allRestaurantsData = {}; // Cache all restaurant data
 
         // 🔑 2. Authentication Flow
 
-        let isSignUpMode = false;
+        // 1. Initial State: Set to Sign Up Mode on load
+        let isSignUpMode = true; 
+        document.addEventListener('DOMContentLoaded', () => {
+            // This forces the initial state to be Sign Up, overriding the default HTML setting
+            if (document.getElementById('auth-panel').classList.contains('hidden')) return; // Already logged in
+            toggleAuthMode(true);
+        });
 
-        // Audio Function - Order Done Sound
+
+        // Audio Functions (Same as before)
         function playOrderDoneSound() {
             if (!canPlayAudio) {
                 console.log("Order Done Sound skipped: Audio not unlocked.");
@@ -898,7 +734,6 @@
             }
         }
         
-        // Audio Function - Click Sound 
         function playClickSound() {
             if (!canPlayAudio) {
                 console.log("Click Sound skipped: Audio not unlocked.");
@@ -908,20 +743,17 @@
             if (sound) {
                 sound.currentTime = 0;
                 sound.volume = 0.5; 
-                // Using cloneNode to allow multiple rapid clicks to play
                 const clone = sound.cloneNode(true);
                 clone.play().catch(e => console.log("Click Sound playback failed:", e));
             }
         }
 
-        // Function to unlock audio context on first user interaction 
         function initAudioUnlock() {
             if (canPlayAudio) return; 
 
             const orderSound = document.getElementById('order-done-sound');
             const clickSound = document.getElementById('click-sound');
             
-            // Try to play both sounds with minimal volume to satisfy browser requirements
             const playPromises = [];
             
             if(orderSound) {
@@ -947,7 +779,6 @@
 
                 canPlayAudio = true;
                 console.log("Audio Unlocked.");
-                // Remove the general listener after successful unlock
                 document.body.removeEventListener('click', initAudioUnlock);
                 document.body.removeEventListener('touchend', initAudioUnlock);
             }).catch(e => {
@@ -979,6 +810,9 @@
                 document.getElementById('auth-panel').classList.remove('hidden');
                 document.getElementById('app-panel').classList.add('hidden');
             }
+            // Update back button text based on current mode
+            const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
+            if (backBtn) backBtn.textContent = "← Back to Login/Sign Up"; 
         }
 
         // Helper for Profile View to show an Info Page
@@ -1000,9 +834,14 @@
         }
 
 
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            document.getElementById('auth-title').textContent = isSignUpMode ? 'Customer Sign Up' : 'Customer Login';
+        function toggleAuthMode(forceSignUp = false) {
+            if (typeof forceSignUp === 'boolean') {
+                isSignUpMode = forceSignUp;
+            } else {
+                isSignUpMode = !isSignUpMode;
+            }
+
+            document.getElementById('auth-title').textContent = isSignUpMode ? 'Sign Up' : 'Login';
             document.getElementById('auth-action-btn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
             
             // Toggle required sign-up fields
@@ -1028,6 +867,7 @@
                 const phone = document.getElementById('auth-phone').value;
                 const city = document.getElementById('auth-city').value; 
                 const pincode = document.getElementById('auth-pincode').value; 
+                const address = document.getElementById('auth-address').value;
                 
                 if (!name || !email || !password || !phone || !city || !pincode) {
                     errorElement.textContent = "Please fill in Name, Email, Password, Phone, City, and Pincode.";
@@ -1044,12 +884,11 @@
                             phone: phone,
                             city: city, 
                             pincode: pincode, 
-                            address: document.getElementById('auth-address').value || 'N/A',
+                            address: address || 'N/A',
                             createdAt: new Date().toISOString()
                         });
                     })
                     .catch((error) => {
-                        // Request 2: Check for existing email error
                         if (error.code === 'auth/email-already-in-use') {
                             errorElement.textContent = "Sign Up failed: This email is already in use. Please log in or use a different email.";
                         } else {
@@ -1068,6 +907,20 @@
                     });
             }
         }
+        
+        // ** MODIFIED: Use signInWithRedirect for mobile reliability **
+        function handleGoogleSignIn() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            // This will redirect the current page to Google's sign-in page.
+            auth.signInWithRedirect(provider)
+                .catch((error) => {
+                    // This error is usually an issue before the redirect (e.g., firewall), not the environment one.
+                    const errorElement = document.getElementById('auth-error');
+                    errorElement.textContent = `Google Sign-In failed: ${error.message}. Please try again.`;
+                    errorElement.classList.remove('hidden');
+                });
+        }
+
 
         function customerLogout() {
             auth.signOut();
@@ -1084,7 +937,8 @@
             } else {
                 document.getElementById('auth-panel').classList.remove('hidden');
                 document.getElementById('app-panel').classList.add('hidden');
-                showInfoPage('auth-main-card');
+                // 1. Ensure Sign Up is shown when logged out
+                toggleAuthMode(true); 
             }
         });
 
@@ -1100,6 +954,7 @@
             document.querySelector(`.nav-item[data-panel="${panelId}"]`).classList.add('active');
 
             if(panelId === 'orders-view') loadOrders();
+            if(panelId === 'home-view') loadRestaurants(); // Reload to apply search filter if present
         }
 
         // --- Notifications ---
@@ -1109,10 +964,10 @@
 
         function loadNotifications() {
             db.ref('admin/notifications').limitToLast(1).on('value', snapshot => {
-                const notifications = snapshot.val();
+                const notifications = snapshot.val() || {};
                 const banner = document.getElementById('notification-banner');
                 const textSpan = document.getElementById('notification-text');
-                if (notifications) {
+                if (Object.keys(notifications).length > 0) {
                     const latest = Object.values(notifications).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
                     textSpan.textContent = `Global Announcement: ${latest.message}`;
                     banner.classList.remove('hidden');
@@ -1130,6 +985,7 @@
             
             if (isEdit) {
                 document.getElementById('profile-name').value = customerProfile.name || '';
+                document.getElementById('profile-email').value = customerProfile.email || auth.currentUser.email || '';
                 document.getElementById('profile-phone').value = customerProfile.phone || '';
                 document.getElementById('profile-city').value = customerProfile.city || ''; 
                 document.getElementById('profile-pincode').value = customerProfile.pincode || ''; 
@@ -1141,9 +997,19 @@
             db.ref(`customers/${uid}`).on('value', snapshot => {
                 customerProfile = snapshot.val() || {};
                 
+                // Set email from auth if missing in profile
+                if (!customerProfile.email && auth.currentUser.email) {
+                    customerProfile.email = auth.currentUser.email;
+                }
+                
+                // 6. Update User Greeting
+                const greetingName = customerProfile.name && customerProfile.name !== 'N/A' ? customerProfile.name.split(' ')[0] : 'Foodie';
+                document.getElementById('user-greeting').textContent = `Welcome, ${greetingName}!`;
+
+
                 // Update Display fields
                 document.getElementById('display-name').textContent = customerProfile.name || 'N/A';
-                document.getElementById('display-email').textContent = customerProfile.email || auth.currentUser.email || 'N/A';
+                document.getElementById('display-email').textContent = customerProfile.email || 'N/A';
                 document.getElementById('display-phone').textContent = customerProfile.phone || 'N/A';
                 document.getElementById('display-city').textContent = customerProfile.city || 'N/A'; 
                 document.getElementById('display-pincode').textContent = customerProfile.pincode || 'N/A'; 
@@ -1166,7 +1032,7 @@
                 phone: document.getElementById('profile-phone').value.trim(),
                 city: document.getElementById('profile-city').value.trim(), 
                 pincode: document.getElementById('profile-pincode').value.trim(), 
-                address: document.getElementById('profile-address').value.trim()
+                address: document.getElementById('profile-address').value.trim() || 'N/A'
             };
 
             // Basic validation
@@ -1195,17 +1061,34 @@
                 return;
             }
             
-            // Listen for all restaurant data, including avgRating, for real-time updates
+            // Listen for all restaurant data, cache it, and then filter
             db.ref('restaurants').on('value', snapshot => {
-                const restaurants = snapshot.val() || {};
-                list.innerHTML = '';
+                allRestaurantsData = snapshot.val() || {};
+                filterRestaurants(document.getElementById('restaurant-search').value);
+            });
+        }
+        
+        // 7. Filter function for Search Bar
+        function filterRestaurants(searchTerm) {
+            const list = document.getElementById('restaurants-list');
+            list.innerHTML = '';
+            
+            const customerPincode = customerProfile.pincode;
+            const searchLower = searchTerm.toLowerCase();
 
-                let foundApproved = false;
-                Object.keys(restaurants).forEach(id => {
-                    const r = restaurants[id];
+            let foundApproved = false;
+            
+            Object.keys(allRestaurantsData).forEach(id => {
+                const r = allRestaurantsData[id];
+                
+                // Filter 1: By Pincode
+                if (r.approved && r.pincode === customerPincode) { 
                     
-                    // Filter by Pincode
-                    if (r.approved && r.pincode === customerPincode) { 
+                    // Filter 2: By Search Term (Name or Cuisine)
+                    const matchesSearch = r.name.toLowerCase().includes(searchLower) || 
+                                          (r.cuisine && r.cuisine.toLowerCase().includes(searchLower));
+
+                    if (matchesSearch) {
                         foundApproved = true;
                         const isOnline = r.isOnline !== false; 
                         const offlineClass = isOnline ? '' : 'restaurant-card-offline';
@@ -1228,13 +1111,14 @@
                         `;
                         list.innerHTML += card;
                     }
-                });
-
-                if (!foundApproved) {
-                    list.innerHTML = '<p>No approved restaurants available in your Pincode area at the moment.</p>';
                 }
             });
+
+            if (!foundApproved) {
+                list.innerHTML = '<p>No approved restaurants available in your Pincode area matching your search.</p>';
+            }
         }
+
 
         function viewMenu(restaurantId, name, cuisine, imageUrl) { 
             currentRestaurantId = restaurantId;
