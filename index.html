@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <!-- Google Fonts for better Title (Goal 3) -->
+    <!-- Google Fonts for better Title -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* Mobile-First, Responsive, Modern UI */
@@ -660,6 +660,44 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
+        // GLOBAL STATE
+        let currentRestaurantId = null;
+        let customerProfile = {};
+        let cart = []; // { id, name, price, quantity, restaurantId, restaurantName }
+        const DELIVERY_FEE = 50.00;
+        let currentSlide = 0;
+        const totalSlides = 3;
+        let canPlayAudio = false; // Audio Unlock Flag
+        let allRestaurantsData = {}; // Cache all restaurant data
+
+        // --- Core Flow Management Function ---
+        function navigateAfterAuth(uid, isNewUser) {
+            db.ref(`customers/${uid}`).once('value')
+                .then(snapshot => {
+                    const profile = snapshot.val();
+                    const needsProfileUpdate = !profile || profile.phone === 'N/A' || profile.pincode === 'N/A';
+
+                    if (isNewUser || needsProfileUpdate) {
+                        // 2. NEW FIX: If new user or profile incomplete, go to Profile Edit mode
+                        document.getElementById('auth-panel').classList.add('hidden');
+                        document.getElementById('app-panel').classList.remove('hidden');
+                        showPanel('profile-view'); 
+                        toggleProfileEditMode(true); 
+                        alert('Please complete your profile details (Phone, City, Pincode) to start ordering!');
+                    } else {
+                        // 3. If fully logged in and profile complete, go to Home
+                        document.getElementById('auth-panel').classList.add('hidden');
+                        document.getElementById('app-panel').classList.remove('hidden');
+                        showPanel('home-view');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error checking user profile:", error);
+                    // Fallback to home
+                    showPanel('home-view'); 
+                });
+        }
+        
         // ** CRITICAL: Handle Google Redirect Result immediately on page load **
         auth.getRedirectResult().then((result) => {
             if (result.credential) {
@@ -669,7 +707,11 @@
                 const email = user.email;
                 const name = user.displayName;
                 
-                // Check if user already exists in 'customers' DB
+                // Determine if this is a first-time sign-up via Google
+                // NOTE: result.additionalUserInfo.isNewUser is more reliable for new sign-ups here
+                const isNewUser = result.additionalUserInfo.isNewUser; 
+
+                // Check and set up customer data if new (or if redirect result shows new user)
                 db.ref(`customers/${uid}`).once('value')
                     .then(snapshot => {
                         if (!snapshot.exists()) {
@@ -682,9 +724,13 @@
                                 pincode: 'N/A', 
                                 address: 'N/A',
                                 createdAt: new Date().toISOString()
+                            }).then(() => {
+                                // Navigate to Profile immediately after setting up initial data
+                                navigateAfterAuth(uid, true); 
                             });
-                            // The onAuthStateChanged listener will now take over and show the app.
-                            alert('Welcome! Please complete your profile (Phone, City, Pincode) in the Profile tab.');
+                        } else {
+                             // Existing user who just logged in via redirect
+                             navigateAfterAuth(uid, false);
                         }
                     })
                     .catch(error => {
@@ -693,104 +739,53 @@
                     });
             }
         }).catch(error => {
-            // This is for general redirect errors, not the initial environment check
+            // Log the error but don't disrupt the main auth flow
             console.error("Google Redirect Result Error:", error);
-            // We do NOT show an alert here, as it might interfere with the main auth flow
+            const errorElement = document.getElementById('auth-error');
+            errorElement.textContent = `Google Sign-In failed: ${error.message}`;
+            errorElement.classList.remove('hidden');
         });
 
-
-        // GLOBAL STATE
-        let currentRestaurantId = null;
-        let customerProfile = {};
-        let cart = []; // { id, name, price, quantity, restaurantId, restaurantName }
-        const DELIVERY_FEE = 50.00;
-        let currentSlide = 0;
-        const totalSlides = 3;
-        let canPlayAudio = false; // Audio Unlock Flag
-        let allRestaurantsData = {}; // Cache all restaurant data
-
         // 🔑 2. Authentication Flow
-
-        // 1. Initial State: Set to Sign Up Mode on load
         let isSignUpMode = true; 
         document.addEventListener('DOMContentLoaded', () => {
-            // This forces the initial state to be Sign Up, overriding the default HTML setting
-            if (document.getElementById('auth-panel').classList.contains('hidden')) return; // Already logged in
+            if (document.getElementById('auth-panel').classList.contains('hidden')) return; 
             toggleAuthMode(true);
         });
 
-
         // Audio Functions (Same as before)
         function playOrderDoneSound() {
-            if (!canPlayAudio) {
-                console.log("Order Done Sound skipped: Audio not unlocked.");
-                return;
-            }
+            if (!canPlayAudio) { console.log("Order Done Sound skipped: Audio not unlocked."); return; }
             const sound = document.getElementById('order-done-sound');
-            if (sound) {
-                sound.currentTime = 0;
-                sound.volume = 1.0; 
-                sound.play().catch(e => console.log("Order Done Sound playback failed:", e));
-            }
+            if (sound) { sound.currentTime = 0; sound.volume = 1.0; sound.play().catch(e => console.log("Order Done Sound playback failed:", e)); }
         }
         
         function playClickSound() {
-            if (!canPlayAudio) {
-                console.log("Click Sound skipped: Audio not unlocked.");
-                return;
-            }
+            if (!canPlayAudio) { console.log("Click Sound skipped: Audio not unlocked."); return; }
             const sound = document.getElementById('click-sound');
-            if (sound) {
-                sound.currentTime = 0;
-                sound.volume = 0.5; 
-                const clone = sound.cloneNode(true);
-                clone.play().catch(e => console.log("Click Sound playback failed:", e));
-            }
+            if (sound) { const clone = sound.cloneNode(true); clone.currentTime = 0; clone.volume = 0.5; clone.play().catch(e => console.log("Click Sound playback failed:", e)); }
         }
 
         function initAudioUnlock() {
             if (canPlayAudio) return; 
-
             const orderSound = document.getElementById('order-done-sound');
             const clickSound = document.getElementById('click-sound');
-            
             const playPromises = [];
-            
-            if(orderSound) {
-                orderSound.volume = 0.01;
-                playPromises.push(orderSound.play());
-            }
-            if(clickSound) {
-                clickSound.volume = 0.01;
-                playPromises.push(clickSound.play());
-            }
+            if(orderSound) { orderSound.volume = 0.01; playPromises.push(orderSound.play()); }
+            if(clickSound) { clickSound.volume = 0.01; playPromises.push(clickSound.play()); }
             
             Promise.all(playPromises.map(p => p.catch(e => e))).then(() => {
-                if(orderSound) {
-                    orderSound.pause();
-                    orderSound.currentTime = 0;
-                    orderSound.volume = 1.0;
-                }
-                if(clickSound) {
-                    clickSound.pause();
-                    clickSound.currentTime = 0;
-                    clickSound.volume = 0.5;
-                }
-
+                if(orderSound) { orderSound.pause(); orderSound.currentTime = 0; orderSound.volume = 1.0; }
+                if(clickSound) { clickSound.pause(); clickSound.currentTime = 0; clickSound.volume = 0.5; }
                 canPlayAudio = true;
-                console.log("Audio Unlocked.");
                 document.body.removeEventListener('click', initAudioUnlock);
                 document.body.removeEventListener('touchend', initAudioUnlock);
-            }).catch(e => {
-                console.log("Audio Unlock attempt completed.");
             });
         }
         
-        // Slider Function
         function startAutoSlide() {
             const slider = document.getElementById('banner-slider');
             if (!slider) return;
-
             setInterval(() => {
                 currentSlide = (currentSlide + 1) % totalSlides;
                 slider.style.transform = `translateX(-${currentSlide * 100 / totalSlides}%)`;
@@ -798,34 +793,28 @@
         }
         document.addEventListener('DOMContentLoaded', startAutoSlide);
 
-        // Info Page Toggler
+        // Info Page Toggler (Same as before)
         function showInfoPage(pageId) {
             document.querySelectorAll('#auth-panel > div').forEach(el => el.classList.add('hidden'));
             document.getElementById('auth-image')?.classList.remove('hidden');
-
             const targetElement = document.getElementById(pageId);
             if(targetElement) targetElement.classList.remove('hidden');
-
             if (pageId !== 'auth-main-card') {
                 document.getElementById('auth-panel').classList.remove('hidden');
                 document.getElementById('app-panel').classList.add('hidden');
             }
-            // Update back button text based on current mode
             const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
             if (backBtn) backBtn.textContent = "← Back to Login/Sign Up"; 
         }
 
-        // Helper for Profile View to show an Info Page
         function showProfileInfoPage(pageId) {
             document.getElementById('auth-panel').classList.remove('hidden');
             document.getElementById('app-panel').classList.add('hidden');
-            
             showInfoPage(pageId);
-            
             const backBtn = document.querySelector(`#${pageId} .btn-secondary`);
             if (backBtn) {
                  backBtn.onclick = () => {
-                    playClickSound(); // Add click sound to back button
+                    playClickSound(); 
                     document.getElementById('auth-panel').classList.add('hidden');
                     document.getElementById('app-panel').classList.remove('hidden');
                     showPanel('profile-view');
@@ -844,7 +833,6 @@
             document.getElementById('auth-title').textContent = isSignUpMode ? 'Sign Up' : 'Login';
             document.getElementById('auth-action-btn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
             
-            // Toggle required sign-up fields
             document.getElementById('auth-name').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('auth-phone').classList.toggle('hidden', !isSignUpMode);
             document.getElementById('auth-city').classList.toggle('hidden', !isSignUpMode); 
@@ -878,6 +866,7 @@
                 auth.createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
                         const uid = userCredential.user.uid;
+                        // Set isNewUser to true for the redirect logic to take over
                         db.ref(`customers/${uid}`).set({
                             name: name,
                             email: email,
@@ -886,6 +875,9 @@
                             pincode: pincode, 
                             address: address || 'N/A',
                             createdAt: new Date().toISOString()
+                        }).then(() => {
+                             // After successful internal sign-up, navigate
+                             navigateAfterAuth(uid, true);
                         });
                     })
                     .catch((error) => {
@@ -899,7 +891,7 @@
             } else {
                 auth.signInWithEmailAndPassword(email, password)
                     .then(() => {
-                        // Login successful.
+                        // Login successful. onAuthStateChanged will handle navigation
                     })
                     .catch((error) => {
                         errorElement.textContent = `Login failed: ${error.message}`;
@@ -908,15 +900,13 @@
             }
         }
         
-        // ** MODIFIED: Use signInWithRedirect for mobile reliability **
         function handleGoogleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
             // This will redirect the current page to Google's sign-in page.
             auth.signInWithRedirect(provider)
                 .catch((error) => {
-                    // This error is usually an issue before the redirect (e.g., firewall), not the environment one.
                     const errorElement = document.getElementById('auth-error');
-                    errorElement.textContent = `Google Sign-In failed: ${error.message}. Please try again.`;
+                    errorElement.textContent = `Google Sign-In failed: ${error.message}. Please check your domain settings.`;
                     errorElement.classList.remove('hidden');
                 });
         }
@@ -929,15 +919,13 @@
 
         auth.onAuthStateChanged(function(user) {
             if (user) {
-                document.getElementById('auth-panel').classList.add('hidden');
-                document.getElementById('app-panel').classList.remove('hidden');
+                // onAuthStateChanged fires on login AND redirect back. 
+                // navigateAfterAuth is the single source of truth for post-auth navigation.
                 loadCustomerData(user.uid);
                 loadNotifications();
-                showPanel('home-view');
             } else {
                 document.getElementById('auth-panel').classList.remove('hidden');
                 document.getElementById('app-panel').classList.add('hidden');
-                // 1. Ensure Sign Up is shown when logged out
                 toggleAuthMode(true); 
             }
         });
@@ -954,7 +942,7 @@
             document.querySelector(`.nav-item[data-panel="${panelId}"]`).classList.add('active');
 
             if(panelId === 'orders-view') loadOrders();
-            if(panelId === 'home-view') loadRestaurants(); // Reload to apply search filter if present
+            if(panelId === 'home-view') loadRestaurants(); 
         }
 
         // --- Notifications ---
@@ -986,10 +974,10 @@
             if (isEdit) {
                 document.getElementById('profile-name').value = customerProfile.name || '';
                 document.getElementById('profile-email').value = customerProfile.email || auth.currentUser.email || '';
-                document.getElementById('profile-phone').value = customerProfile.phone || '';
-                document.getElementById('profile-city').value = customerProfile.city || ''; 
-                document.getElementById('profile-pincode').value = customerProfile.pincode || ''; 
-                document.getElementById('profile-address').value = customerProfile.address || '';
+                document.getElementById('profile-phone').value = customerProfile.phone === 'N/A' ? '' : customerProfile.phone || '';
+                document.getElementById('profile-city').value = customerProfile.city === 'N/A' ? '' : customerProfile.city || ''; 
+                document.getElementById('profile-pincode').value = customerProfile.pincode === 'N/A' ? '' : customerProfile.pincode || ''; 
+                document.getElementById('profile-address').value = customerProfile.address === 'N/A' ? '' : customerProfile.address || '';
             }
         }
 
@@ -1020,19 +1008,25 @@
                 document.getElementById('checkout-phone').value = customerProfile.phone || '';
                 document.getElementById('checkout-address').value = customerProfile.address || '';
 
-                toggleProfileEditMode(false);
-                loadRestaurants(); // Load restaurants after profile (and pincode) is loaded
+                // NEW FIX: After data loads, check navigation flow
+                navigateAfterAuth(uid, false); 
             });
         }
 
         function updateProfile() {
             const uid = auth.currentUser.uid;
+            const nameInput = document.getElementById('profile-name').value.trim();
+            const phoneInput = document.getElementById('profile-phone').value.trim();
+            const cityInput = document.getElementById('profile-city').value.trim();
+            const pincodeInput = document.getElementById('profile-pincode').value.trim();
+            const addressInput = document.getElementById('profile-address').value.trim();
+            
             const updates = {
-                name: document.getElementById('profile-name').value.trim(),
-                phone: document.getElementById('profile-phone').value.trim(),
-                city: document.getElementById('profile-city').value.trim(), 
-                pincode: document.getElementById('profile-pincode').value.trim(), 
-                address: document.getElementById('profile-address').value.trim() || 'N/A'
+                name: nameInput,
+                phone: phoneInput,
+                city: cityInput, 
+                pincode: pincodeInput, 
+                address: addressInput || 'N/A'
             };
 
             // Basic validation
@@ -1044,6 +1038,8 @@
             db.ref(`customers/${uid}`).update(updates)
                 .then(() => {
                     alert('Profile updated successfully!');
+                    // NEW FIX: Navigate to Home after saving profile
+                    showPanel('home-view');
                 })
                 .catch(error => alert('Profile update failed: ' + error.message));
         }
@@ -1541,7 +1537,6 @@
             });
         }
         
-        // Initial setup on load is handled by auth.onAuthStateChanged
     </script>
 </body>
 </html>
