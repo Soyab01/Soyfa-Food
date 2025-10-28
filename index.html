@@ -700,7 +700,40 @@
                 });
         }
         
-        // ** Removed getRedirectResult ** - Now using onAuthStateChanged after popup completes.
+        // ** IMPORTANT: Handle Redirect Result for the fallback to sign in and complete the flow **
+        auth.getRedirectResult().then((result) => {
+            if (result.user) {
+                // If we land here, it means signInWithRedirect was called previously and it was successful.
+                const user = result.user;
+                const uid = user.uid;
+                const email = user.email;
+                const name = user.displayName;
+                
+                db.ref(`customers/${uid}`).once('value')
+                    .then(snapshot => {
+                        if (!snapshot.exists()) {
+                            // New Google user via Redirect fallback
+                            db.ref(`customers/${uid}`).set({
+                                name: name || 'Google User',
+                                email: email,
+                                phone: 'N/A', // Set to N/A to force profile completion
+                                city: 'N/A', 
+                                pincode: 'N/A', 
+                                address: 'N/A',
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                        // onAuthStateChanged will now handle navigation after the profile data loads.
+                    });
+            }
+        }).catch(error => {
+            console.error("Google Redirect Result Error:", error);
+            // Show error in auth panel if needed
+            const errorElement = document.getElementById('auth-error');
+            errorElement.textContent = `Google Sign-In failed during redirect: ${error.message}`;
+            errorElement.classList.remove('hidden');
+        });
+
 
         // 🔑 2. Authentication Flow
         let isSignUpMode = true; 
@@ -822,7 +855,6 @@
                 auth.createUserWithEmailAndPassword(email, password)
                     .then((userCredential) => {
                         const uid = userCredential.user.uid;
-                        // Set profile data with phone/pincode provided on sign-up
                         db.ref(`customers/${uid}`).set({
                             name: name,
                             email: email,
@@ -831,9 +863,6 @@
                             pincode: pincode, 
                             address: address || 'N/A',
                             createdAt: new Date().toISOString()
-                        }).then(() => {
-                            // After successful internal sign-up, navigate to home (profile is complete)
-                            // onAuthStateChanged will fire and call loadCustomerData -> navigateAfterAuth, which will see the complete profile and go to home.
                         });
                     })
                     .catch((error) => {
@@ -856,10 +885,13 @@
             }
         }
         
-        // ** MODIFIED: Reverting to signInWithPopup for a pop-up experience **
+        // ** MODIFIED: Pop-up with Redirect Fallback **
         function handleGoogleSignIn() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // This opens a pop-up window in supported environments (web/hybrid with settings)
+            const errorElement = document.getElementById('auth-error');
+            errorElement.classList.add('hidden');
+            
+            // 1. Try Pop-up first
             auth.signInWithPopup(provider)
                 .then((result) => {
                     const user = result.user;
@@ -867,36 +899,45 @@
                     const email = user.email;
                     const name = user.displayName;
                     
-                    // Check if user already exists in 'customers' DB
                     db.ref(`customers/${uid}`).once('value')
                         .then(snapshot => {
                             if (!snapshot.exists()) {
-                                // First-time sign-up via Google, save minimal data
+                                // New Google user via Pop-up
                                 db.ref(`customers/${uid}`).set({
                                     name: name || 'Google User',
                                     email: email,
-                                    phone: 'N/A', // Set to N/A to force profile completion
+                                    phone: 'N/A', 
                                     city: 'N/A', 
                                     pincode: 'N/A', 
                                     address: 'N/A',
                                     createdAt: new Date().toISOString()
                                 });
-                                // onAuthStateChanged will fire and call loadCustomerData -> navigateAfterAuth, which will see the incomplete profile and go to edit mode.
                             }
-                            // Existing user or new user with data saved, onAuthStateChanged handles flow
                         });
                 })
                 .catch((error) => {
-                    const errorElement = document.getElementById('auth-error');
-                    // Check for the specific error related to pop-up/redirect protocol issue (only if running locally)
-                    if (error.code === 'auth/operation-not-supported-in-this-environment') {
-                        errorElement.textContent = "Google Sign-In failed: Pop-up is blocked or domain is not secure (must be HTTPS/localhost).";
-                    } else if (error.code === 'auth/unauthorized-domain') {
-                         errorElement.textContent = "Google Sign-In failed: Your domain is not authorized in Firebase settings.";
+                    console.error("Popup failed, trying redirect:", error);
+                    
+                    // 2. If Popup fails due to unsupported environment or blocking, fallback to Redirect
+                    if (error.code === 'auth/operation-not-supported-in-this-environment' || 
+                        error.code === 'auth/popup-blocked' || 
+                        error.code === 'auth/unauthorized-domain') {
+                        
+                        errorElement.textContent = "Pop-up failed. Redirecting for Google sign-in...";
+                        errorElement.classList.remove('hidden');
+                        
+                        // Fallback to Redirect
+                        auth.signInWithRedirect(provider)
+                            .catch((redirectError) => {
+                                console.error("Redirect Fallback failed:", redirectError);
+                                errorElement.textContent = `Google Sign-In failed: ${redirectError.message}.`;
+                                errorElement.classList.remove('hidden');
+                            });
                     } else {
+                         // Other errors (e.g., user cancelled, network)
                         errorElement.textContent = `Google Sign-In failed: ${error.message}`;
+                        errorElement.classList.remove('hidden');
                     }
-                    errorElement.classList.remove('hidden');
                 });
         }
 
@@ -908,6 +949,7 @@
 
         auth.onAuthStateChanged(function(user) {
             if (user) {
+                // This fires on successful login (email/pass or popup/redirect)
                 loadCustomerData(user.uid);
                 loadNotifications();
             } else {
