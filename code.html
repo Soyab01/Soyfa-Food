@@ -17,36 +17,74 @@
             --secondary-color: #555;
             --background-start: #fceabb; /* Light Food Gradient Start */
             --background-end: #f8b500; /* Light Food Gradient End */
-            --background-color: #eef2f5; 
+            --title-bg-color: #fff8e1; /* Very light yellow/cream for food theme */
+            --title-shadow-color: #f0a000; /* Darker shade of yellow for 3D depth */
             --card-background: #ffffff;
             --border-radius: 12px;
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             --text-color: #333;
             --step-active-color: #4CAF50;
             --step-inactive-color: #ccc;
+            --nav-height: 60px;
+            --menu-action-height: 65px; 
+            --header-height: 130px; /* Safe Estimated height for fixed header (Title + Notification) */
+            --content-pad: 15px; /* Standard content padding */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; color: var(--text-color); }
-        body { background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%); line-height: 1.6; padding-bottom: 60px; min-height: 100vh; }
+        body { 
+            background: linear-gradient(135deg, var(--background-start) 0%, var(--background-end) 100%); 
+            line-height: 1.6; 
+            padding-bottom: var(--nav-height); 
+            min-height: 100vh; 
+        }
         
-        /* Goal 2: 3D Title Design */
-        .app-title {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800; /* Made it bolder */
-            font-size: 32px; /* Increased size */
-            color: var(--primary-color);
-            /* Enhanced 3D/Pop-out shadow */
-            text-shadow: 
-                -1px -1px 0 #fff, /* White/Light top-left highlight */
-                1px 1px 0 #f8b500, /* Color/Depth shadow */
-                3px 3px 5px rgba(0, 0, 0, 0.3); /* Stronger overall shadow */
-            margin-top: 10px;
-            margin-bottom: 5px; /* Added space before search bar */
-            display: block; /* Ensure it takes full width for container alignment */
+        /* FIX START: Universal Body Padding for Fixed Header Clearance */
+        #app-panel:not(.hidden) body {
+            /* Set padding-top to HEADER HEIGHT to universally clear the fixed header area */
+            padding-top: var(--header-height); 
+            /* Added padding on the bottom for fixed menu action bar (which is above nav) */
+            padding-bottom: calc(var(--nav-height) + var(--menu-action-height)); 
+        }
+        /* FIX END */
+
+        /* NEW: Fixed Header Styling with Food-Themed Background */
+        #header-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1010; 
+            background: linear-gradient(0deg, #ffe082 0%, var(--title-bg-color) 100%); 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        #header-fixed > .container {
+            padding-top: 15px; /* Standard container padding at the top of the fixed header */
+            padding-bottom: 5px; 
         }
         
         .hidden { display: none !important; }
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .container { padding-left: var(--content-pad); padding-right: var(--content-pad); max-width: 600px; margin: 0 auto; }
+        
+        /* FIX 2: Content Panel Padding - Removed default top padding, rely on first child margin */
+        .content-panel.container {
+            padding-top: 0; 
+            padding-bottom: 0; 
+        }
+
+        /* FIX 3: Hide Menu Scrollbar */
+        #menu-scroll-wrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        #menu-scroll-wrapper {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        /* END SCROLLBAR HIDE */
+
+
         .btn { padding: 12px 15px; border: none; border-radius: var(--border-radius); cursor: pointer; transition: all 0.3s ease; font-weight: bold; text-align: center; width: 100%; margin-top: 10px; font-size: 16px; }
         .btn-small { padding: 6px 10px !important; width: auto !important; font-size: 0.9em !important; margin-top: 5px !important; display: inline-block !important; }
         .btn-primary { background-color: var(--primary-color); color: white; box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4); }
@@ -64,22 +102,37 @@
         .info-link-btn { display: block; width: 100%; padding: 12px 15px; margin-bottom: 8px; border: none; border-radius: var(--border-radius); background-color: var(--card-background); text-align: left; text-decoration: none; font-size: 16px; font-weight: bold; color: var(--secondary-color); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08); }
 
         /* Navigation & Structure */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--card-background); box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: var(--card-background); box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
         .nav-item { text-align: center; flex-grow: 1; padding: 5px; cursor: pointer; color: #ccc; transition: color 0.3s ease; font-size: 12px; }
         .nav-item.active { color: var(--primary-color); }
         .icon::before { content: "\1F3E0"; display: block; font-size: 20px; margin-bottom: 3px; }
         .icon-orders::before { content: "\1F6CD"; }
         .icon-profile::before { content: "\1F464"; }
-        .content-panel h2 { margin-bottom: 15px; color: var(--secondary-color); }
 
+        /* 3D Title Design */
+        .app-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 32px; 
+            color: var(--primary-color);
+            text-shadow: 
+                2px 2px 0 var(--title-shadow-color), 
+                4px 4px 0 #555, 
+                6px 6px 8px rgba(0, 0, 0, 0.4); 
+            margin-top: 5px; 
+            margin-bottom: 5px;
+            display: block;
+        }
+        
         /* Goal 1: Search Bar Styling */
         .search-container {
             position: relative;
             margin-bottom: 20px;
+            margin-top: var(--content-pad); /* FIX 4: Home View - Add top margin to first element */
         }
         #restaurant-search {
             width: 100%;
-            padding: 12px 45px 12px 15px; /* Added padding for icon on the right */
+            padding: 12px 45px 12px 15px;
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             font-size: 16px;
@@ -87,13 +140,64 @@
         }
         .search-icon {
             position: absolute;
-            top: 50%;
+            top: 50%; 
             right: 15px;
             transform: translateY(-50%);
             color: var(--primary-color);
             font-size: 18px;
-            pointer-events: none; /* Make sure the icon doesn't block input clicks */
+            pointer-events: none;
         }
+
+        /* Notification Design and Animation (Blast/Pop-in effect) */
+        .notification-alert {
+            background-color: #ffaa00; 
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95em;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            opacity: 0; 
+            transform: scale(0); 
+            animation: pop-and-jiggle-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; 
+        }
+        
+        .notification-alert .celebrate-icon {
+            margin-right: 10px;
+            font-size: 1.2em; 
+        }
+
+        .notification-alert.hidden {
+            animation: none;
+            display: none !important;
+        }
+
+        .alert-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 5px;
+            margin-left: 10px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .alert-close-btn:hover { opacity: 1; }
+
+        @keyframes pop-and-jiggle-in {
+            0% { opacity: 0; transform: scale(0.5); }
+            60% { opacity: 1; transform: scale(1.15); } 
+            80% { transform: scale(0.95); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+        /* ------------------------------------------------ */
 
         /* Home View & Components */
         #slider-wrapper { overflow: hidden; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: var(--shadow); }
@@ -107,12 +211,89 @@
         .restaurant-card-offline { background-color: #ffeaea; opacity: 0.7; pointer-events: none; }
         .rating-chip { background-color: #4CAF50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
 
-        /* Menu View */
+        /* Menu View Fixes */
+        #menu-actions-fixed {
+            position: fixed;
+            bottom: var(--nav-height); 
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background: var(--card-background); 
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            padding: 5px 0;
+            height: var(--menu-action-height);
+        }
+        #menu-actions-fixed .container {
+            display: flex;
+            gap: 10px; 
+            align-items: center;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        #menu-actions-fixed .btn {
+            margin-top: 0; 
+            flex-grow: 1; 
+            width: auto; 
+            padding: 10px 15px; 
+        }
+        #menu-view {
+             padding-bottom: calc(var(--menu-action-height) + var(--content-pad)); /* Ensures scrollable space above fixed menu bar */
+        }
+        #menu-view > img {
+             margin-top: var(--content-pad); /* FIX 4: Menu View - Add top margin to first element (Image) */
+        }
+        #menu-scroll-wrapper {
+            max-height: 40vh; /* Simple temporary value to ensure scroll, real height is complex */
+            overflow-y: auto; 
+            padding-bottom: 10px;
+        }
+        @media (min-height: 700px) {
+            #menu-scroll-wrapper {
+                /* Better calculation for larger screens: VH - Header - Content Pad - Rest Image/Title/Space - Fixed Menu Action Bar - Fixed Nav */
+                max-height: calc(100vh - var(--header-height) - var(--content-pad) - 180px - 5px - 15px - var(--menu-action-height) - 15px - 5px);
+            }
+        }
+
+
+        /* Menu Item Styling */
         #menu-restaurant-image { width: 100%; height: 180px; object-fit: cover; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: var(--shadow); }
         .menu-item { display: flex; background: var(--card-background); border-radius: var(--border-radius); margin-bottom: 10px; padding: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); align-items: center; gap: 15px; }
+        
+        .item-image {
+            width: 70px; 
+            height: 70px; 
+            object-fit: cover;
+            border-radius: 8px; 
+            flex-shrink: 0; 
+        }
+        .item-details {
+            flex-grow: 1; 
+        }
+        .item-details h4 {
+            font-size: 1.1em;
+            margin-bottom: 3px;
+            color: var(--text-color);
+        }
+        .item-details p {
+            font-size: 0.9em;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        .item-price {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
         .add-to-cart-btn { padding: 8px 12px; background-color: var(--step-active-color); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4); }
 
         /* Cart View */
+        /* FIX: Cart View & Checkout should have padding at the bottom for fixed nav clearance */
+        #cart-view {
+            padding-bottom: calc(var(--nav-height) + var(--content-pad)); 
+        }
+        #cart-view h2 {
+             margin-top: var(--content-pad); /* FIX 4: Cart View - Add top margin to first element (H2) */
+        }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .cart-item-controls { display: flex; align-items: center; background: #f5f5f5; border-radius: 20px; padding: 2px; }
         .cart-item-controls button { width: 30px; height: 30px; border-radius: 50%; border: none; background: white; font-weight: bold; color: var(--primary-color); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -121,6 +302,12 @@
         .empty-cart-icon { font-size: 60px; margin-bottom: 20px; display: block; opacity: 0.5; }
 
         /* Orders & Tracking */
+        #orders-view {
+             padding-bottom: calc(var(--nav-height) + var(--content-pad)); 
+        }
+        #orders-view h2 {
+             margin-top: var(--content-pad); /* FIX 4: Orders View - Add top margin to first element (H2) */
+        }
         .order-card { background: var(--card-background); padding: 15px; margin-bottom: 15px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
         .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
         .order-status { padding: 4px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold; color: white; }
@@ -135,6 +322,13 @@
         .tracking-step.active { color: var(--text-color); font-weight: 500; }
         
         /* Profile */
+        /* FIX: Profile View should have padding at the bottom for fixed nav clearance */
+        #profile-view {
+            padding-bottom: calc(var(--nav-height) + var(--content-pad)); 
+        }
+        #profile-view h2 {
+             margin-top: var(--content-pad); /* FIX 4: Profile View - Add top margin to first element (H2) */
+        }
         .profile-card { background: var(--card-background); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; }
         .profile-field { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
         .profile-field-label { font-weight: 500; color: var(--secondary-color); }
@@ -166,30 +360,34 @@
                 <a href="#" class="info-link" onclick="playClickSound(); showInfoPage('terms-page');">Terms</a>
             </div>
         </div>
-        <div id="about-page" class="info-page hidden"><h2 style="color: var(--primary-color);">About Soyfa Food</h2><p>Welcome to Soyfa Food, your local food delivery partner.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
-        <div id="privacy-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Privacy Policy</h2><p>We respect your privacy and only use data for delivery.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
-        <div id="terms-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Terms & Conditions</h2><p>By using this app you agree to our terms of service.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
-         <div id="cancellation-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Cancellation Policy</h2><p>Cancellations depend on restaurant preparation status.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+        <!-- Info Page Content -->
+        <div id="about-page" class="info-page hidden"><h2 style="color: var(--primary-color);">About Soyfa Food</h2><p>Welcome to Soyfa Food, your local food delivery partner, dedicated to bringing the best meals from your favourite local restaurants right to your doorstep, quickly and reliably. We connect local customers with quality food vendors, ensuring fresh and timely delivery every time.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+        <div id="privacy-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Privacy Policy</h2><p>We respect your privacy. This policy explains how we collect, use, and protect your personal information (Name, Email, Phone, Address, Pincode) solely for the purpose of processing and delivering your food orders and improving our service. We do not share your personal data with third parties for marketing purposes.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+        <div id="terms-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Terms & Conditions</h2><p>By using the Soyfa Food application, you agree to comply with our terms of service, including our order placement and payment policies. All prices are subject to change. The service facilitates the transaction between you and the restaurant/delivery partner. We are not responsible for the food preparation itself.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
+         <div id="cancellation-page" class="info-page hidden"><h2 style="color: var(--primary-color);">Cancellation Policy</h2><p>Cancellations are permitted only before the restaurant starts preparing the order (status 'PLACED' or 'ACCEPTED'). Once the order status changes to 'PREPARING' or later, cancellation is not possible, and no refund will be issued. Please contact support immediately for cancellation requests.</p><button class="btn btn-secondary" onclick="playClickSound(); showInfoPage('auth-main-card');">← Back</button></div>
     </div>
 
     <!-- 2. Main Application Panel -->
     <div id="app-panel" class="hidden"> 
         
-        <!-- Header -->
-        <div class="container" style="padding-bottom: 0;">
-            <!-- Goal 2: 3D Title -->
-            <h1 class="app-title">Soyfa Food</h1> 
-            <p id="notification-banner" class="alert hidden"><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
-            
-            <!-- Goal 1: Search Bar (Moved Here) -->
-            <div class="search-container">
-                <input type="text" id="restaurant-search" placeholder="Search restaurants or cuisine..." onkeyup="filterRestaurants(this.value);">
-                <span class="search-icon">🔍</span>
+        <!-- NEW: Fixed Header (Title and Global Notification) -->
+        <div id="header-fixed">
+             <div class="container">
+                <!-- Goal 2: 3D Title -->
+                <h1 class="app-title">Soyfa Food</h1> 
+                <!-- Notification (UPDATED: Added celebrate-icon span) -->
+                <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
             </div>
         </div>
 
         <!-- 2.1 Home View -->
         <div id="home-view" class="content-panel container">
+            <!-- MOVED HERE: Search Bar only visible on Home screen -->
+            <div class="search-container">
+                <input type="text" id="restaurant-search" placeholder="Search restaurants or cuisine..." onkeyup="filterRestaurants(this.value);">
+                <span class="search-icon">🔍</span>
+            </div>
+            
             <h2 id="user-greeting" style="color: var(--primary-color); margin-bottom: 20px;">Welcome!</h2>
             
             <!-- Banner Slider Wrapper -->
@@ -210,10 +408,20 @@
             <img id="menu-restaurant-image" src="" alt="Restaurant Image">
             <h2 id="menu-restaurant-name" style="margin-bottom: 5px;">Restaurant Name</h2>
             <p id="menu-restaurant-cuisine" style="margin-bottom: 15px; color: #777;"></p>
-            <div id="menu-items-list"></div>
-            <button class="btn btn-secondary" onclick="playClickSound(); showPanel('home-view');">← Back to Restaurants</button>
-            <button class="btn btn-primary" onclick="playClickSound(); showCart();">View Cart (₹<span id="cart-total-display">0.00</span>)</button>
+            <!-- Scrollable wrapper for menu items -->
+            <div id="menu-scroll-wrapper">
+                <div id="menu-items-list"></div>
+            </div>
         </div>
+
+        <!-- Fixed Menu Action Bar -->
+        <div id="menu-actions-fixed" class="hidden">
+            <div class="container">
+                <button class="btn btn-secondary" id="back-to-restaurants-btn" onclick="playClickSound(); showPanel('home-view');">← Back to Restaurants</button>
+                <button class="btn btn-primary" id="view-cart-btn" onclick="playClickSound(); showCart();">View Cart (₹<span id="cart-total-display">0.00</span>)</button>
+            </div>
+        </div>
+
 
         <!-- 2.3 Orders View -->
         <div id="orders-view" class="content-panel container hidden">
@@ -301,7 +509,7 @@
         // Global State
         let currentRestaurantId = null, customerProfile = {}, cart = [], allRestaurantsData = {};
         const DELIVERY_FEE = 50.00;
-        let currentSlide = 0, canPlayAudio = false;
+        let currentSlide = 0, canPlayAudio = false, isSignUpMode = true; 
 
         // --- Auth & Init ---
         document.addEventListener('DOMContentLoaded', () => { if(document.getElementById('auth-panel').classList.contains('hidden')) return; toggleAuthMode(true); startAutoSlide(); });
@@ -326,13 +534,29 @@
                  // No bottom nav item for cart, so no active class needed
             }
             
+            // Handle fixed menu action bar visibility
+            const menuActionsFixed = document.getElementById('menu-actions-fixed');
+            if (panelId === 'menu-view') {
+                menuActionsFixed.classList.remove('hidden');
+            } else {
+                menuActionsFixed.classList.add('hidden');
+            }
+            
             if(panelId === 'orders-view') loadOrders();
             if(panelId === 'home-view') loadRestaurants();
         }
         function showInfoPage(pId) { document.querySelectorAll('#auth-panel > div').forEach(e => e.classList.add('hidden')); document.getElementById('auth-image')?.classList.remove('hidden'); document.getElementById(pId).classList.remove('hidden'); if(pId!=='auth-main-card'){ document.getElementById('auth-panel').classList.remove('hidden'); document.getElementById('app-panel').classList.add('hidden'); } }
         function showProfileInfoPage(pId) { showInfoPage(pId); document.querySelector(`#${pId} .btn-secondary`).onclick = () => { playClickSound(); document.getElementById('auth-panel').classList.add('hidden'); document.getElementById('app-panel').classList.remove('hidden'); showPanel('profile-view'); }; }
         function closeNotification() { document.getElementById('notification-banner').classList.add('hidden'); }
-        function loadNotifications() { db.ref('admin/notifications').limitToLast(1).on('value', s => { const n = s.val(); if(n) { document.getElementById('notification-text').textContent = `Announcement: ${Object.values(n).pop().message}`; document.getElementById('notification-banner').classList.remove('hidden'); } }); }
+        function loadNotifications() { db.ref('admin/notifications').limitToLast(1).on('value', s => { const n = s.val(); if(n) { 
+            // UPDATED: Ensure notification is visible and re-animated on new load
+            const banner = document.getElementById('notification-banner');
+            banner.classList.add('hidden'); // Force hide first to reset animation
+            setTimeout(() => {
+                document.getElementById('notification-text').textContent = `Announcement: ${Object.values(n).pop().message}`;
+                banner.classList.remove('hidden'); // Show with animation
+            }, 50);
+        } }); }
 
         // --- Profile ---
         function loadCustomerData(uid) { db.ref(`customers/${uid}`).on('value', s => { customerProfile = s.val() || {}; if(!customerProfile.email && auth.currentUser.email) customerProfile.email = auth.currentUser.email; document.getElementById('user-greeting').textContent = `Welcome, ${customerProfile.name ? customerProfile.name.split(' ')[0] : 'Foodie'}!`; ['name','email','phone','city','pincode','address'].forEach(f => document.getElementById(`display-${f}`).textContent = customerProfile[f] || 'N/A'); ['name','phone'].forEach(f => document.getElementById(`checkout-${f}`).value = customerProfile[f] || ''); document.getElementById('checkout-address').value = customerProfile.address || ''; loadRestaurants(); }); }
@@ -348,17 +572,24 @@
                 const r = allRestaurantsData[id];
                 if (r.approved && r.pincode === customerProfile.pincode && (r.name.toLowerCase().includes(search) || (r.cuisine||'').toLowerCase().includes(search))) {
                     found = true;
-                    list.innerHTML += `<div class="restaurant-card ${r.isOnline===false?'restaurant-card-offline':''}" onclick="${r.isOnline!==false ? `playClickSound(); viewMenu('${id}','${r.name}','${r.cuisine}','${r.imageUrl}');` : ''}"><img src="${r.imageUrl||'https://via.placeholder.com/150'}" class="restaurant-card-image"><div class="restaurant-card-details"><h3><span>${r.name}</span><span class="rating-chip">⭐ ${r.avgRating?r.avgRating.toFixed(1):'N/A'}</span></h3><p>${r.cuisine||'Mixed'} | ${r.address||'N/A'}</p><p style="font-size:0.8em;color:var(--primary-color);">${r.isOnline!==false?'Tap to View Menu':'Currently Offline'}</p></div></div>`;
+                    // FIX: Added onerror to restaurant image as well for robustness
+                    list.innerHTML += `<div class="restaurant-card ${r.isOnline===false?'restaurant-card-offline':''}" onclick="${r.isOnline!==false ? `playClickSound(); viewMenu('${id}','${r.name}','${r.cuisine}','${r.imageUrl}');` : ''}"><img src="${r.imageUrl||'https://via.placeholder.com/150'}" onerror="this.onerror=null;this.src='https://via.placeholder.com/150?text=Rest+Err';" class="restaurant-card-image"><div class="restaurant-card-details"><h3><span>${r.name}</span><span class="rating-chip">⭐ ${r.avgRating?r.avgRating.toFixed(1):'N/A'}</span></h3><p>${r.cuisine||'Mixed'} | ${r.address||'N/A'}</p><p style="font-size:0.8em;color:var(--primary-color);">${r.isOnline!==false?'Tap to View Menu':'Currently Offline'}</p></div></div>`;
                 }
             });
             if(!found) list.innerHTML = '<p>No restaurants found in your area.</p>';
         }
         function viewMenu(rId, name, cuisine, img) {
             currentRestaurantId = rId; document.getElementById('menu-restaurant-name').textContent = name; document.getElementById('menu-restaurant-cuisine').textContent = cuisine||'Mixed'; document.getElementById('menu-restaurant-image').src = img||'https://via.placeholder.com/180';
+            // FIX: Added onerror for Menu header image
+            document.getElementById('menu-restaurant-image').onerror = () => { document.getElementById('menu-restaurant-image').src = 'https://via.placeholder.com/180?text=Rest+Err'; document.getElementById('menu-restaurant-image').onerror = null; };
             const list = document.getElementById('menu-items-list'); list.innerHTML = '<p>Loading menu...</p>';
             db.ref(`menus/${rId}`).on('value', s => {
                 const m = s.val()||{}; list.innerHTML = '';
-                Object.keys(m).forEach(k => { if(m[k].available!==false) list.innerHTML += `<div class="menu-item"><img src="${m[k].imageUrl||'https://via.placeholder.com/70'}" class="item-image"><div class="item-details"><h4>${m[k].name}</h4><p>${m[k].description||''}</p><div class="item-price">₹${m[k].price.toFixed(2)}</div></div><button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id:'${k}',name:'${m[k].name}',price:${m[k].price},restaurantId:'${rId}',restaurantName:'${name}'});">+ ADD</button></div>`; });
+                Object.keys(m).forEach(k => { 
+                    if(m[k].available!==false) 
+                    // FIX: Added class item-image and onerror to menu item image
+                    list.innerHTML += `<div class="menu-item"><img src="${m[k].imageUrl||'https://via.placeholder.com/70'}" class="item-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/70?text=Food+Err'"><div class="item-details"><h4>${m[k].name}</h4><p>${m[k].description||''}</p><div class="item-price">₹${m[k].price.toFixed(2)}</div></div><button class="add-to-cart-btn" onclick="playClickSound(); addToCart({id:'${k}',name:'${m[k].name}',price:${m[k].price},restaurantId:'${rId}',restaurantName:'${name}'});">+ ADD</button></div>`; 
+                });
                 if(list.innerHTML==='') list.innerHTML='<p>No items available.</p>';
             });
             showPanel('menu-view');
