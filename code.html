@@ -17,7 +17,7 @@
             --secondary-color: #555;
             --background-start: #fceabb; /* Light Food Gradient Start */
             --background-end: #f8b500; /* Light Food Gradient End */
-            --title-bg-color: #fff8e1; /* Very light yellow/cream for food theme */
+            --title-bg-color: transparent; /* Changed to transparent */
             --title-shadow-color: #f0a000; /* Darker shade of yellow for 3D depth */
             --card-background: #ffffff;
             --border-radius: 12px;
@@ -27,7 +27,6 @@
             --step-inactive-color: #ccc;
             --nav-height: 60px;
             --menu-action-height: 65px; 
-            --header-height: 130px; /* Safe Estimated height for fixed header (Title + Notification) */
             --content-pad: 15px; /* Standard content padding */
         }
 
@@ -39,48 +38,31 @@
             min-height: 100vh; 
         }
         
-        /* FIX START: Universal Body Padding for Fixed Header Clearance */
+        /* FIX START: Removed all fixed header related CSS */
         #app-panel:not(.hidden) body {
-            /* Set padding-top to HEADER HEIGHT to universally clear the fixed header area */
-            padding-top: var(--header-height); 
-            /* Added padding on the bottom for fixed menu action bar (which is above nav) */
-            padding-bottom: calc(var(--nav-height) + var(--menu-action-height)); 
+            padding-top: 0; 
+            padding-bottom: var(--nav-height); /* Set to just bottom nav height for non-menu views */
         }
         /* FIX END */
-
-        /* NEW: Fixed Header Styling with Food-Themed Background */
-        #header-fixed {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1010; 
-            background: linear-gradient(0deg, #ffe082 0%, var(--title-bg-color) 100%); 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
-            border-bottom-left-radius: 8px;
-            border-bottom-right-radius: 8px;
-        }
-        #header-fixed > .container {
-            padding-top: 15px; /* Standard container padding at the top of the fixed header */
-            padding-bottom: 5px; 
-        }
+        
+        /* Removed #header-fixed CSS */
         
         .hidden { display: none !important; }
         .container { padding-left: var(--content-pad); padding-right: var(--content-pad); max-width: 600px; margin: 0 auto; }
         
-        /* FIX 2: Content Panel Padding - Removed default top padding, rely on first child margin */
+        /* FIX: Content Panel Padding */
         .content-panel.container {
-            padding-top: 0; 
-            padding-bottom: 0; 
+            padding-top: var(--content-pad); 
+            padding-bottom: var(--content-pad); 
         }
 
-        /* FIX 3: Hide Menu Scrollbar */
+        /* FIX: Hide Menu Scrollbar */
         #menu-scroll-wrapper::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none; 
         }
         #menu-scroll-wrapper {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
         }
         /* END SCROLLBAR HIDE */
 
@@ -122,13 +104,14 @@
             margin-top: 5px; 
             margin-bottom: 5px;
             display: block;
+            /* FIX: Ensure the title has bottom margin so it doesn't touch the next element */
+            margin-bottom: 15px; 
         }
         
         /* Goal 1: Search Bar Styling */
         .search-container {
             position: relative;
             margin-bottom: 20px;
-            margin-top: var(--content-pad); /* FIX 4: Home View - Add top margin to first element */
         }
         #restaurant-search {
             width: 100%;
@@ -148,7 +131,7 @@
             pointer-events: none;
         }
 
-        /* Notification Design and Animation (Blast/Pop-in effect) */
+        /* Notification Design and Animation (Non-fixed) */
         .notification-alert {
             background-color: #ffaa00; 
             color: white;
@@ -200,6 +183,9 @@
         /* ------------------------------------------------ */
 
         /* Home View & Components */
+        #home-view > .app-title {
+             margin-top: 0; /* Remove top margin from the first element in the container */
+        }
         #slider-wrapper { overflow: hidden; border-radius: var(--border-radius); margin-bottom: 15px; box-shadow: var(--shadow); }
         #banner-slider { display: flex; width: 300%; transition: transform 0.5s ease-in-out; }
         .banner-image { width: 33.333%; height: 180px; object-fit: cover; flex-shrink: 0; }
@@ -239,18 +225,19 @@
         #menu-view {
              padding-bottom: calc(var(--menu-action-height) + var(--content-pad)); /* Ensures scrollable space above fixed menu bar */
         }
-        #menu-view > img {
-             margin-top: var(--content-pad); /* FIX 4: Menu View - Add top margin to first element (Image) */
+        #menu-view .app-title {
+             margin-top: 0; /* Remove top margin from the first element in the container */
         }
+        #menu-restaurant-image { margin-top: 15px; /* Add margin under notification/title if present */ }
         #menu-scroll-wrapper {
-            max-height: 40vh; /* Simple temporary value to ensure scroll, real height is complex */
+            max-height: 40vh; 
             overflow-y: auto; 
             padding-bottom: 10px;
         }
         @media (min-height: 700px) {
             #menu-scroll-wrapper {
-                /* Better calculation for larger screens: VH - Header - Content Pad - Rest Image/Title/Space - Fixed Menu Action Bar - Fixed Nav */
-                max-height: calc(100vh - var(--header-height) - var(--content-pad) - 180px - 5px - 15px - var(--menu-action-height) - 15px - 5px);
+                /* Recalculated max height based on non-fixed header */
+                max-height: calc(100vh - var(--nav-height) - 400px); 
             }
         }
 
@@ -287,12 +274,11 @@
         .add-to-cart-btn { padding: 8px 12px; background-color: var(--step-active-color); color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 5px rgba(76, 175, 80, 0.4); }
 
         /* Cart View */
-        /* FIX: Cart View & Checkout should have padding at the bottom for fixed nav clearance */
         #cart-view {
             padding-bottom: calc(var(--nav-height) + var(--content-pad)); 
         }
-        #cart-view h2 {
-             margin-top: var(--content-pad); /* FIX 4: Cart View - Add top margin to first element (H2) */
+        #cart-view .app-title {
+             margin-top: 0; /* Remove top margin from the first element in the container */
         }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .cart-item-controls { display: flex; align-items: center; background: #f5f5f5; border-radius: 20px; padding: 2px; }
@@ -305,8 +291,8 @@
         #orders-view {
              padding-bottom: calc(var(--nav-height) + var(--content-pad)); 
         }
-        #orders-view h2 {
-             margin-top: var(--content-pad); /* FIX 4: Orders View - Add top margin to first element (H2) */
+        #orders-view .app-title {
+             margin-top: 0; /* Remove top margin from the first element in the container */
         }
         .order-card { background: var(--card-background); padding: 15px; margin-bottom: 15px; border-radius: var(--border-radius); box-shadow: var(--shadow); }
         .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
@@ -322,12 +308,11 @@
         .tracking-step.active { color: var(--text-color); font-weight: 500; }
         
         /* Profile */
-        /* FIX: Profile View should have padding at the bottom for fixed nav clearance */
         #profile-view {
             padding-bottom: calc(var(--nav-height) + var(--content-pad)); 
         }
-        #profile-view h2 {
-             margin-top: var(--content-pad); /* FIX 4: Profile View - Add top margin to first element (H2) */
+        #profile-view .app-title {
+             margin-top: 0; /* Remove top margin from the first element in the container */
         }
         .profile-card { background: var(--card-background); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow); margin-bottom: 20px; }
         .profile-field { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
@@ -370,19 +355,14 @@
     <!-- 2. Main Application Panel -->
     <div id="app-panel" class="hidden"> 
         
-        <!-- NEW: Fixed Header (Title and Global Notification) -->
-        <div id="header-fixed">
-             <div class="container">
-                <!-- Goal 2: 3D Title -->
-                <h1 class="app-title">Soyfa Food</h1> 
-                <!-- Notification (UPDATED: Added celebrate-icon span) -->
-                <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
-            </div>
-        </div>
-
         <!-- 2.1 Home View -->
         <div id="home-view" class="content-panel container">
-            <!-- MOVED HERE: Search Bar only visible on Home screen -->
+            <!-- Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
+            <!-- Notification -->
+            <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
+            
+            <!-- Search Bar -->
             <div class="search-container">
                 <input type="text" id="restaurant-search" placeholder="Search restaurants or cuisine..." onkeyup="filterRestaurants(this.value);">
                 <span class="search-icon">🔍</span>
@@ -405,6 +385,11 @@
 
         <!-- 2.2 Menu View -->
         <div id="menu-view" class="content-panel container hidden">
+            <!-- Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
+            <!-- Notification -->
+            <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
+            
             <img id="menu-restaurant-image" src="" alt="Restaurant Image">
             <h2 id="menu-restaurant-name" style="margin-bottom: 5px;">Restaurant Name</h2>
             <p id="menu-restaurant-cuisine" style="margin-bottom: 15px; color: #777;"></p>
@@ -425,12 +410,22 @@
 
         <!-- 2.3 Orders View -->
         <div id="orders-view" class="content-panel container hidden">
+            <!-- Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
+            <!-- Notification -->
+            <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
+            
             <h2>My Orders</h2>
             <div id="orders-list"><p>Loading orders...</p></div>
         </div>
 
         <!-- 2.4 Profile View -->
         <div id="profile-view" class="content-panel container hidden">
+            <!-- Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
+            <!-- Notification -->
+            <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
+            
             <h2>My Profile</h2>
             <div class="profile-card">
                 <div id="profile-display-mode">
@@ -464,6 +459,11 @@
 
         <!-- NEW FULL SCREEN CART VIEW -->
         <div id="cart-view" class="content-panel container hidden">
+            <!-- Title -->
+            <h1 class="app-title">Soyfa Food</h1> 
+            <!-- Notification -->
+            <p id="notification-banner" class="notification-alert hidden"><span class="celebrate-icon">🎉</span><span id="notification-text"></span><button class="alert-close-btn" onclick="playClickSound(); closeNotification();">×</button></p>
+            
             <h2 style="color: var(--primary-color);">Your Cart</h2>
             <div id="cart-items-list">
                 <!-- Cart items or Empty State will appear here -->
