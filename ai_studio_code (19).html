@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soyfa Super App - Master Admin</title>
+    
+    <!-- SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        .sidebar-item.active { background: #1e293b; color: #38bdf8; border-left: 4px solid #38bdf8; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.25s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col md:flex-row min-h-screen text-slate-800">
+
+    <!-- SIDEBAR -->
+    <aside class="w-full md:w-64 bg-slate-900 text-white flex-shrink-0 flex flex-col justify-between shadow-xl">
+        <div>
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">SOYFA ADMIN</h1>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Super Control Panel</p>
+                </div>
+                <span class="bg-blue-500/20 text-blue-400 text-xs px-2 py-0.5 rounded-full font-bold">Online</span>
+            </div>
+
+            <nav class="p-3 space-y-1 text-xs font-bold text-gray-300">
+                <button onclick="switchTab('orders-tab')" class="sidebar-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-receipt text-amber-400 text-base"></i> <span>Live Orders</span>
+                </button>
+                <button onclick="switchTab('control-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-toggle-on text-emerald-400 text-base"></i> <span>मार्केट ऑन/ऑफ & नोटिस</span>
+                </button>
+                <button onclick="switchTab('mart-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-store text-emerald-400 text-base"></i> <span>Q-Mart & Sabzi</span>
+                </button>
+                <button onclick="switchTab('food-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-burger text-red-400 text-base"></i> <span>Food & Restaurants</span>
+                </button>
+                <button onclick="switchTab('animals-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-cow text-amber-500 text-base"></i> <span>पशु मंडी (Animals)</span>
+                </button>
+                <button onclick="switchTab('services-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-briefcase text-green-400 text-base"></i> <span>Local Services</span>
+                </button>
+                <button onclick="switchTab('teachers-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-chalkboard-user text-indigo-400 text-base"></i> <span>Teachers List</span>
+                </button>
+                <button onclick="switchTab('vacancies-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-school text-purple-400 text-base"></i> <span>School Vacancies</span>
+                </button>
+                <button onclick="switchTab('directory-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-landmark text-sky-400 text-base"></i> <span>Officials & Wards</span>
+                </button>
+                <button onclick="switchTab('books-tab')" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-book-open text-blue-400 text-base"></i> <span>Books Store</span>
+                </button>
+            </nav>
+        </div>
+        <div class="p-3 border-t border-slate-800 text-[11px] text-gray-500 text-center font-bold">Soyfa Admin &copy; 2026</div>
+    </aside>
+
+    <!-- DASHBOARD VIEW -->
+    <main class="flex-1 p-4 md:p-6 overflow-y-auto max-h-screen">
+        
+        <!-- 1. LIVE ORDERS -->
+        <section id="orders-tab" class="tab-content active">
+            <h2 class="text-xl font-black mb-3">Live Orders</h2>
+            <div id="admin-orders-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">Loading orders...</div>
+        </section>
+
+        <!-- 2. MARKET ON/OFF & NOTICE CONTROL -->
+        <section id="control-tab" class="tab-content">
+            <h2 class="text-xl font-black mb-1">मार्केट ऑन/ऑफ एवं लाइव नोटिस कंट्रोल</h2>
+            <p class="text-xs text-gray-500 mb-5">मार्केट को चालू/बंद करें और यूजर ऐप में चलने वाला नोटिस मैनेज करें।</p>
+
+            <div class="bg-white p-5 rounded-2xl border shadow-sm mb-6">
+                <h3 class="font-extrabold text-sm text-gray-800 mb-3"><i class="fa-solid fa-store-slash text-red-500 mr-1.5"></i> मार्केट स्टेटस कंट्रोल (Open / Closed)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3.5 rounded-xl border flex flex-col justify-between bg-slate-50" id="card-status-mart">
+                        <div><span class="font-extrabold text-sm block">🛒 Q-Mart ग्रोसरी</span><span class="text-[11px] font-bold mt-1 inline-block" id="label-status-mart">Loading...</span></div>
+                        <button onclick="toggleMarketStatus('mart')" id="btn-status-mart" class="mt-3 py-1.5 px-3 rounded-lg font-black text-xs text-white shadow-xs">बदलें</button>
+                    </div>
+                    <div class="p-3.5 rounded-xl border flex flex-col justify-between bg-slate-50" id="card-status-veg">
+                        <div><span class="font-extrabold text-sm block">🥦 ताज़ा सब्जियां</span><span class="text-[11px] font-bold mt-1 inline-block" id="label-status-veg">Loading...</span></div>
+                        <button onclick="toggleMarketStatus('vegetables')" id="btn-status-veg" class="mt-3 py-1.5 px-3 rounded-lg font-black text-xs text-white shadow-xs">बदलें</button>
+                    </div>
+                    <div class="p-3.5 rounded-xl border flex flex-col justify-between bg-slate-50" id="card-status-food">
+                        <div><span class="font-extrabold text-sm block">🍔 Food डिलीवरी</span><span class="text-[11px] font-bold mt-1 inline-block" id="label-status-food">Loading...</span></div>
+                        <button onclick="toggleMarketStatus('food')" id="btn-status-food" class="mt-3 py-1.5 px-3 rounded-lg font-black text-xs text-white shadow-xs">बदलें</button>
+                    </div>
+                    <div class="p-3.5 rounded-xl border flex flex-col justify-between bg-slate-50" id="card-status-books">
+                        <div><span class="font-extrabold text-sm block">📚 System Books</span><span class="text-[11px] font-bold mt-1 inline-block" id="label-status-books">Loading...</span></div>
+                        <button onclick="toggleMarketStatus('books')" id="btn-status-books" class="mt-3 py-1.5 px-3 rounded-lg font-black text-xs text-white shadow-xs">बदलें</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border shadow-sm">
+                <h3 class="font-extrabold text-sm text-gray-800 mb-2"><i class="fa-solid fa-bullhorn text-indigo-600 mr-1.5"></i> यूजर ऐप के लिए लाइव नोटिस (Single Line Marquee)</h3>
+                <p class="text-xs text-gray-500 mb-3">यहाँ लिखा गया नोटिस यूजर पैनल के सबसे ऊपर एक लाइन में चलता हुआ दिखेगा।</p>
+                <div class="space-y-2 text-xs">
+                    <input type="text" id="admin-notice-input" placeholder="जैसे: आज भारी बारिश के कारण डिलीवरी में 10 मिनट की देरी हो सकती है..." class="w-full p-3 border rounded-xl outline-none font-medium">
+                    <div class="flex items-center gap-3 pt-1">
+                        <label class="flex items-center gap-1.5 font-bold cursor-pointer">
+                            <input type="checkbox" id="admin-notice-active" checked class="w-4 h-4 text-blue-600 rounded">
+                            <span>नोटिस चालू रखें (Active)</span>
+                        </label>
+                        <button onclick="saveAnnouncementNotice()" class="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl shadow-xs active:scale-95 transition">नोटिस सेव करें</button>
+                        <button onclick="deleteAnnouncementNotice()" class="bg-red-50 text-red-600 font-bold px-3 py-2 rounded-xl border border-red-200">नोटिस हटाएं</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Q-MART & SABZI -->
+        <section id="mart-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">Q-Mart Products & Fresh Sabzi</h2>
+                <div class="flex gap-2">
+                    <button onclick="openMartModal()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add Product</button>
+                    <button onclick="openVegModal()" class="bg-emerald-800 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add ताज़ा सब्जी</button>
+                </div>
+            </div>
+            <div class="mb-5">
+                <h3 class="font-bold text-xs text-emerald-800 mb-2">ताज़ा सब्जियां (Fresh Sabzi Slider)</h3>
+                <div id="admin-veg-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs"></div>
+            </div>
+            <div>
+                <h3 class="font-bold text-xs text-gray-700 mb-2">ग्रोसरी प्रोडक्ट्स</h3>
+                <div id="admin-mart-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs"></div>
+            </div>
+        </section>
+
+        <!-- 4. FOOD & RESTAURANTS (WITH MENU MANAGEMENT) -->
+        <section id="food-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">Food Restaurants (रेस्टोरेंट एवं मेन्यू)</h2>
+                <button onclick="openRestModal()" class="bg-red-500 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add Restaurant</button>
+            </div>
+            <div id="admin-rest-list" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs"></div>
+        </section>
+
+        <!-- 5. ANIMAL MARKET (पशु मंडी) -->
+        <section id="animals-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">पशु मंडी (Animal Listings)</h2>
+                <button onclick="openAdminAnimalModal()" class="bg-amber-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add पशु</button>
+            </div>
+            <div id="admin-animals-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+        </section>
+
+        <!-- 6. SERVICES -->
+        <section id="services-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">Local Services (प्रदाता जोड़ें, एडिट करें व अप्रूव करें)</h2>
+                <button onclick="openAdminServiceModal()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add Service Provider</button>
+            </div>
+            <div id="admin-services-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+        </section>
+
+        <!-- 7. TEACHERS -->
+        <section id="teachers-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">Registered Teachers (शिक्षक सूची)</h2>
+                <button onclick="openAdminTeacherModal()" class="bg-indigo-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add Teacher</button>
+            </div>
+            <div id="admin-teachers-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+        </section>
+
+        <!-- 8. SCHOOL VACANCIES -->
+        <section id="vacancies-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">School Vacancies (स्कूल रिक्वायरमेंट)</h2>
+                <button onclick="openAdminVacancyModal()" class="bg-purple-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add School Requirement</button>
+            </div>
+            <div id="admin-vacancies-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+        </section>
+
+        <!-- 9. DIRECTORY -->
+        <section id="directory-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">Officials & Ward Members</h2>
+                <div class="flex gap-2">
+                    <button onclick="openOffModal()" class="bg-blue-700 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl">+ Official</button>
+                    <button onclick="openWardModal()" class="bg-emerald-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl">+ Ward Member</button>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h3 class="font-bold text-xs text-blue-800 mb-1">Government Officials</h3>
+                <div id="admin-officials-list" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs"></div>
+            </div>
+            <div>
+                <h3 class="font-bold text-xs text-emerald-800 mb-1">Ward Members</h3>
+                <div id="admin-ward-list" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs"></div>
+            </div>
+        </section>
+
+        <!-- 10. BOOKS -->
+        <section id="books-tab" class="tab-content">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-black">Books Store (Class-wise)</h2>
+                <button onclick="openBookModal()" class="bg-blue-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow">+ Add Book</button>
+            </div>
+            <div id="admin-books-list" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs"></div>
+        </section>
+    </main>
+
+    <!-- ADMIN GLOBAL MODAL -->
+    <div id="adminModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-sm p-5 rounded-2xl max-h-[85vh] overflow-y-auto text-xs space-y-2">
+            <div class="flex justify-between items-center mb-2"><h3 class="font-bold text-sm" id="aModalTitle">Item</h3><button onclick="closeAModal()" class="text-lg font-bold">&times;</button></div>
+            <div id="aModalBody" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- DEDICATED RESTAURANT MENU MANAGEMENT MODAL -->
+    <div id="manageMenuModal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white w-full max-w-lg p-5 rounded-3xl max-h-[90vh] overflow-y-auto text-xs space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="font-black text-sm text-red-600" id="menuModalRestName">Restaurant Menu</h3>
+                    <p class="text-[10px] text-gray-400">नई डिश जोड़ें और इस रेस्टोरेंट का मेन्यू मैनेज करें</p>
+                </div>
+                <button onclick="closeManageMenuModal()" class="text-2xl font-bold text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+
+            <!-- ADD DISH FORM -->
+            <div class="bg-red-50/60 p-3 rounded-2xl border border-red-100 space-y-2">
+                <span class="font-extrabold text-xs text-red-900 block"><i class="fa-solid fa-plus-circle mr-1"></i> इस रेस्टोरेंट में नई डिश जोड़ें:</span>
+                <input type="text" id="dishName" placeholder="डिश का नाम (उदा. पनीर टिक्का, दाल मखनी...)" class="w-full p-2 border rounded-xl bg-white outline-none">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="dishPrice" placeholder="कीमत (₹)" class="w-full p-2 border rounded-xl bg-white outline-none">
+                    <select id="dishFoodType" class="w-full p-2 border rounded-xl bg-white outline-none font-bold">
+                        <option value="veg">🟢 Pure Veg</option>
+                        <option value="nonveg">🔴 Non-Veg</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="dishDelCharge" placeholder="पैकिंग चार्ज (उदा. 30)" class="w-full p-2 border rounded-xl bg-white outline-none">
+                    <select id="dishPayMode" class="w-full p-2 border rounded-xl bg-white outline-none">
+                        <option value="BOTH">COD + Online Both</option>
+                        <option value="COD">Only COD</option>
+                        <option value="ONLINE">Only Online</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1">डिश की फोटो (Gallery से चुनें):</label>
+                    <input type="file" id="dishImgFile" accept="image/*" class="w-full border p-1 rounded-xl bg-white text-xs">
+                </div>
+                <button id="btnSaveDish" onclick="saveRestaurantDish()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold p-2.5 rounded-xl shadow-xs transition active:scale-95">
+                    + डिश मेन्यू में जोड़ें (Save Dish)
+                </button>
+            </div>
+
+            <!-- DISHES LIST FOR THIS RESTAURANT -->
+            <div>
+                <h4 class="font-black text-xs text-gray-800 mb-2">मौजूदा मेन्यू डिशेज:</h4>
+                <div id="rest-dishes-container" class="space-y-2 max-h-56 overflow-y-auto">
+                    <p class="text-gray-400 text-center py-4">डिशेज लोड हो रही हैं...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS LOGIC -->
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyACNrzJgRGKmn8JsRuS_2b7RecPIfahTvQ", databaseURL: "https://singup-aec8c-default-rtdb.firebaseio.com", projectId: "singup-aec8c" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let allAnimalsData = {}, allServicesData = {}, allTeachersData = {}, allVacanciesData = {};
+        let cachedMartCats = [], cachedCuisines = [], cachedAnimalCats = [], cachedSrvCats = [], cachedTeacherSubs = [];
+        let currentMarketStatus = { mart: 'open', vegetables: 'open', food: 'open', books: 'open' };
+        
+        // Active restaurant for menu management
+        let currentManagingRestId = null;
+
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        function closeAModal() { document.getElementById('adminModal').classList.add('hidden'); }
+        function closeManageMenuModal() { 
+            document.getElementById('manageMenuModal').classList.add('hidden');
+            currentManagingRestId = null;
+        }
+        function deleteItem(path) { if(confirm("Are you sure you want to delete this item?")) db.ref(path).remove(); }
+
+        function syncCategorySelect(selectEl, inputId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (selectEl.value === '__NEW__') {
+                input.value = '';
+                input.focus();
+            } else if (selectEl.value !== '') {
+                input.value = selectEl.value;
+            }
+        }
+
+        // COMPRESS GALLERY PHOTO TO BASE64
+        function compressImage(file, cb) {
+            if (!file) return cb(null);
+            try {
+                const r = new FileReader();
+                r.readAsDataURL(file);
+                r.onload = e => {
+                    const i = new Image();
+                    i.onload = () => {
+                        try {
+                            const c = document.createElement('canvas');
+                            const s = Math.min(1, 400 / i.width);
+                            c.width = i.width * s;
+                            c.height = i.height * s;
+                            const ctx = c.getContext('2d');
+                            ctx.drawImage(i, 0, 0, c.width, c.height);
+                            cb(c.toDataURL('image/jpeg', 0.65));
+                        } catch(err) { cb(e.target.result); }
+                    };
+                    i.onerror = () => cb(e.target.result);
+                    i.src = e.target.result;
+                };
+                r.onerror = () => cb(null);
+            } catch(e) { cb(null); }
+        }
+
+        // ==================== 1. MARKET ON/OFF SYSTEM ====================
+        db.ref('market_status').on('value', s => {
+            currentMarketStatus = s.val() || { mart: 'open', vegetables: 'open', food: 'open', books: 'open' };
+            renderMarketControlCards();
+        });
+
+        function renderMarketControlCards() {
+            const modules = [
+                { key: 'mart', name: 'Q-Mart ग्रोसरी' },
+                { key: 'vegetables', name: 'ताज़ा सब्जियां' },
+                { key: 'food', name: 'Food डिलीवरी' },
+                { key: 'books', name: 'System Books' }
+            ];
+
+            modules.forEach(m => {
+                const isOpen = (currentMarketStatus[m.key] !== 'closed');
+                const label = document.getElementById(`label-status-${m.key}`);
+                const btn = document.getElementById(`btn-status-${m.key}`);
+                const card = document.getElementById(`card-status-${m.key}`);
+
+                if (label && btn && card) {
+                    if (isOpen) {
+                        label.innerHTML = '🟢 चालू है (Open)';
+                        label.className = 'text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded mt-1 inline-block';
+                        btn.innerText = 'मार्केट बंद करें (Turn OFF)';
+                        btn.className = 'mt-3 py-1.5 px-3 rounded-lg font-bold text-xs bg-red-600 hover:bg-red-700 text-white shadow-xs';
+                        card.className = 'p-3.5 rounded-xl border border-emerald-200 flex flex-col justify-between bg-emerald-50/40';
+                    } else {
+                        label.innerHTML = '🔴 बंद है (Closed)';
+                        label.className = 'text-[11px] font-black text-red-700 bg-red-50 px-2 py-0.5 rounded mt-1 inline-block';
+                        btn.innerText = 'मार्केट चालू करें (Turn ON)';
+                        btn.className = 'mt-3 py-1.5 px-3 rounded-lg font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs';
+                        card.className = 'p-3.5 rounded-xl border border-red-200 flex flex-col justify-between bg-red-50/40';
+                    }
+                }
+            });
+        }
+
+        function toggleMarketStatus(moduleKey) {
+            const current = currentMarketStatus[moduleKey] !== 'closed';
+            const newStatus = current ? 'closed' : 'open';
+            db.ref(`market_status/${moduleKey}`).set(newStatus).then(() => {
+                alert(`${moduleKey.toUpperCase()} मार्केट अब ${newStatus === 'open' ? 'चालू (OPEN)' : 'बंद (CLOSED)'} कर दिया गया है।`);
+            });
+        }
+
+        // ==================== 2. SINGLE LINE ANNOUNCEMENT TICKER ====================
+        db.ref('announcement').on('value', s => {
+            const data = s.val() || { text: '', active: false };
+            const input = document.getElementById('admin-notice-input');
+            const check = document.getElementById('admin-notice-active');
+            if (input && check) {
+                input.value = data.text || '';
+                check.checked = (data.active !== false);
+            }
+        });
+
+        function saveAnnouncementNotice() {
+            const text = document.getElementById('admin-notice-input').value.trim();
+            const active = document.getElementById('admin-notice-active').checked;
+            if (!text) return alert("कृपया नोटिस लिखें!");
+
+            db.ref('announcement').set({
+                text: text,
+                active: active,
+                updatedAt: new Date().toISOString()
+            }).then(() => alert("नोटिस सफलतापूर्वक सेव हो गया! यूजर ऐप में लाइव दिख रहा है।"));
+        }
+
+        function deleteAnnouncementNotice() {
+            if (!confirm("क्या आप इस नोटिस को हटाना चाहते हैं?")) return;
+            db.ref('announcement').set({ text: '', active: false }).then(() => {
+                document.getElementById('admin-notice-input').value = '';
+                alert("नोटिस हटा दिया गया!");
+            });
+        }
+
+        // ==================== 3. LIVE ORDERS ====================
+        db.ref('orders').on('value', s => {
+            const data = s.val() || {}; const c = document.getElementById('admin-orders-container'); c.innerHTML = '';
+            const keys = Object.keys(data).sort((a,b) => new Date(data[b].createdAt) - new Date(data[a].createdAt));
+            if(!keys.length) return c.innerHTML = '<p class="text-gray-400">No orders.</p>';
+            keys.forEach(k => {
+                const o = data[k];
+                c.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-2xl shadow-xs border flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between font-bold"><span class="text-blue-600">#${o.orderId.slice(-6)} (${o.orderType})</span><span class="text-emerald-700 font-black">₹${o.totalAmount}</span></div>
+                            <p class="font-bold mt-1">${o.customerName} | ${o.phone}</p>
+                            <p class="text-gray-500 mb-2">${o.address}</p>
+                            <div class="bg-gray-50 p-2 rounded-lg mb-2">${(o.items||[]).map(i=>`<div>• ${i.name} (x${i.quantity})</div>`).join('')}</div>
+                        </div>
+                        <div class="flex gap-2 border-t pt-2">
+                            <select onchange="db.ref('orders/${k}').update({status:this.value})" class="p-1 border rounded bg-white flex-1 font-bold">
+                                <option value="${o.status}">${o.status} (Current)</option>
+                                <option value="ACCEPTED">ACCEPTED</option><option value="PREPARING">PREPARING</option><option value="OUT FOR DELIVERY">OUT FOR DELIVERY</option><option value="DELIVERED">DELIVERED</option><option value="CANCELLED">CANCELLED</option>
+                            </select>
+                            <button onclick="deleteItem('orders/${k}')" class="text-red-500 font-bold px-2 bg-red-50 rounded">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        // ==================== 4. Q-MART & SABZI ====================
+        db.ref('qmart/vegetables').on('value', s => {
+            const data = s.val() || {}; const l = document.getElementById('admin-veg-list'); l.innerHTML = '';
+            Object.keys(data).forEach(k => {
+                const v = data[k];
+                l.innerHTML += `
+                    <div class="bg-white p-2.5 rounded-xl border border-emerald-100 flex flex-col justify-between">
+                        <img src="${v.img}" class="h-20 w-full object-contain mb-1 rounded-lg">
+                        <h4 class="font-bold truncate">${v.name}</h4><span class="text-emerald-700 font-black">₹${v.price} (${v.weight})</span>
+                        <span class="text-[9px] font-bold text-blue-600">${v.payMode || 'BOTH'}</span>
+                        <button onclick="deleteItem('qmart/vegetables/${k}')" class="mt-2 text-red-500 font-bold bg-red-50 py-1 rounded">Delete</button>
+                    </div>
+                `;
+            });
+        });
+        function openVegModal() {
+            document.getElementById('aModalTitle').innerText = "Add Fresh Vegetable (सब्जी)";
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="text" id="vgName" placeholder="सब्जी का नाम (उदा. देशी टमाटर)" class="w-full p-2 border rounded">
+                <input type="number" id="vgPrice" placeholder="कीमत (₹)" class="w-full p-2 border rounded">
+                <input type="text" id="vgWeight" placeholder="वजन (उदा. 1 kg / 500g)" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">Payment Options:</label>
+                <select id="vgPayMode" class="w-full p-2 border rounded">
+                    <option value="BOTH">COD + Online Payment Both (दोनों)</option>
+                    <option value="COD">Only Cash on Delivery (सिर्फ COD)</option>
+                    <option value="ONLINE">Only Online Payment (सिर्फ ऑनलाइन)</option>
+                </select>
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="vgImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveVeg" onclick="saveVeg()" class="w-full bg-emerald-700 text-white font-bold p-2 rounded mt-2">सब्जी सेव करें</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveVeg() {
+            const name = document.getElementById('vgName').value.trim();
+            const price = Number(document.getElementById('vgPrice').value);
+            const weight = document.getElementById('vgWeight').value.trim();
+            const payMode = document.getElementById('vgPayMode').value;
+            const file = document.getElementById('vgImgFile').files[0];
+
+            if (!name || !price) return alert("नाम और कीमत आवश्यक हैं!");
+            const btn = document.getElementById('btnSaveVeg'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                const id = 'veg_' + Date.now();
+                db.ref(`qmart/vegetables/${id}`).set({ 
+                    id, name, price, weight, 
+                    img: imgUrl || 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300',
+                    payMode 
+                }).then(() => closeAModal());
+            });
+        }
+
+        db.ref('qmart/products').on('value', s => {
+            const data = s.val() || {}; const l = document.getElementById('admin-mart-list'); l.innerHTML = '';
+            cachedMartCats = [...new Set(Object.values(data).map(p => p.cat).filter(Boolean))];
+            Object.keys(data).forEach(k => {
+                const p = data[k];
+                l.innerHTML += `
+                    <div class="bg-white p-2.5 rounded-xl border flex flex-col justify-between">
+                        <img src="${p.img}" class="h-20 w-full object-contain mb-1 rounded-lg">
+                        <h4 class="font-bold truncate">${p.name}</h4><span class="text-emerald-600 font-black">₹${p.price}</span>
+                        <span class="text-[9px] font-bold text-gray-500">${p.cat}</span>
+                        <button onclick="deleteItem('qmart/products/${k}')" class="mt-2 text-red-500 font-bold bg-red-50 py-1 rounded">Delete</button>
+                    </div>
+                `;
+            });
+        });
+        function openMartModal() {
+            document.getElementById('aModalTitle').innerText = "Add Mart Product";
+            const catOpts = cachedMartCats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="text" id="mName" placeholder="Product Name" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">कैटेगरी (चुनें या नई टाइप करें):</label>
+                <select id="mCatSelect" onchange="syncCategorySelect(this, 'mCat')" class="w-full p-2 border rounded bg-white">
+                    <option value="">-- मौजूद कैटेगरी चुनें --</option>
+                    ${catOpts}
+                    <option value="__NEW__">➕ नई कैटेगरी टाइप करें</option>
+                </select>
+                <input type="text" id="mCat" placeholder="Category लिखें" class="w-full p-2 border rounded mt-1">
+                <input type="number" id="mPrice" placeholder="Price (₹)" class="w-full p-2 border rounded">
+                <input type="text" id="mWeight" placeholder="Weight/Unit" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">Payment Options:</label>
+                <select id="mPayMode" class="w-full p-2 border rounded">
+                    <option value="BOTH">COD + Online Payment Both</option>
+                    <option value="COD">Only Cash on Delivery</option>
+                    <option value="ONLINE">Only Online Payment</option>
+                </select>
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="mImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveMart" onclick="saveMart()" class="w-full bg-emerald-600 text-white font-bold p-2 rounded mt-2">Save Product</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveMart() {
+            const name = document.getElementById('mName').value.trim();
+            const cat = document.getElementById('mCat').value.trim();
+            const price = Number(document.getElementById('mPrice').value);
+            const weight = document.getElementById('mWeight').value.trim();
+            const payMode = document.getElementById('mPayMode').value;
+            const file = document.getElementById('mImgFile').files[0];
+
+            if (!name || !price || !cat) return alert("नाम, कैटेगरी और कीमत आवश्यक हैं!");
+            const btn = document.getElementById('btnSaveMart'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                const id = 'm_' + Date.now();
+                db.ref(`qmart/products/${id}`).set({ 
+                    id, name, cat, price, weight, 
+                    img: imgUrl || 'https://via.placeholder.com/150',
+                    payMode, inStock: true 
+                }).then(() => closeAModal());
+            });
+        }
+
+        // ==================== 5. FOOD RESTAURANTS & MENU MANAGEMENT ====================
+        db.ref('restaurants').on('value', s => {
+            const data = s.val() || {}; const l = document.getElementById('admin-rest-list'); l.innerHTML = '';
+            cachedCuisines = [...new Set(Object.values(data).map(r => r.cuisine).filter(Boolean))];
+            Object.keys(data).forEach(k => {
+                const r = data[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3.5 rounded-2xl border shadow-xs flex flex-col justify-between">
+                        <div>
+                            <img src="${r.imageUrl}" class="w-full h-28 object-cover rounded-xl mb-2">
+                            <h4 class="font-bold text-sm text-gray-900">${r.name}</h4>
+                            <p class="text-gray-500 text-[11px]">${r.cuisine} | Pin: ${r.pincode}</p>
+                            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded mt-1 ${r.foodType==='veg'?'bg-emerald-50 text-emerald-700':'bg-red-50 text-red-700'}">
+                                ${r.foodType==='veg'?'🟢 Pure Veg':'🔴 Non-Veg'}
+                            </span>
+                        </div>
+                        <div class="space-y-1.5 mt-3 pt-2 border-t border-gray-100">
+                            <!-- MANAGE MENU BUTTON -->
+                            <button onclick="openManageMenuModal('${k}', '${r.name.replace(/'/g, "\\'")}')" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-xs transition active:scale-95 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-utensils"></i> मेन्यू मैनेज करें (+ डिश जोड़ें)
+                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="db.ref('restaurants/${k}').update({approved:${!r.approved}})" class="flex-1 py-1 rounded-lg font-bold text-[11px] ${r.approved?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}">${r.approved?'Approved':'Approve'}</button>
+                                <button onclick="deleteRestaurantWithMenu('${k}')" class="text-red-500 font-bold px-3 py-1 bg-red-50 rounded-lg text-[11px]">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        function deleteRestaurantWithMenu(rId) {
+            if (!confirm("क्या आप इस रेस्टोरेंट और इसके पूरे मेन्यू को हटाना चाहते हैं?")) return;
+            db.ref(`restaurants/${rId}`).remove();
+            db.ref(`menus/${rId}`).remove();
+        }
+
+        function openRestModal() {
+            document.getElementById('aModalTitle').innerText = "Add Restaurant";
+            const cuiOpts = cachedCuisines.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="text" id="rName" placeholder="Restaurant Name" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">क्यूज़ीन (चुनें या टाइप करें):</label>
+                <select id="rCuisineSelect" onchange="syncCategorySelect(this, 'rCuisine')" class="w-full p-2 border rounded bg-white">
+                    <option value="">-- मौजूद क्यूज़ीन चुनें --</option>
+                    ${cuiOpts}
+                    <option value="__NEW__">➕ नई क्यूज़ीन टाइप करें</option>
+                </select>
+                <input type="text" id="rCuisine" placeholder="Cuisine (उदा. Fast Food)" class="w-full p-2 border rounded mt-1">
+                <select id="rFoodType" class="w-full p-2 border rounded mt-1">
+                    <option value="nonveg" selected>🔴 Non-Veg</option>
+                    <option value="veg">🟢 Pure Veg</option>
+                </select>
+                <input type="number" id="rPin" placeholder="Pincode" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">Payment Options:</label>
+                <select id="rPayMode" class="w-full p-2 border rounded">
+                    <option value="BOTH">COD + Online Both</option>
+                    <option value="COD">Only COD</option>
+                    <option value="ONLINE">Only Online Payment</option>
+                </select>
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="rImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveRest" onclick="saveRest()" class="w-full bg-red-500 text-white font-bold p-2 rounded mt-2">Save Restaurant</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function saveRest() {
+            const name = document.getElementById('rName').value.trim();
+            const cuisine = document.getElementById('rCuisine').value.trim();
+            const foodType = document.getElementById('rFoodType').value;
+            const pincode = document.getElementById('rPin').value.trim();
+            const payMode = document.getElementById('rPayMode').value;
+            const file = document.getElementById('rImgFile').files[0];
+
+            if (!name || !cuisine) return alert("नाम और क्यूज़ीन आवश्यक हैं!");
+            const btn = document.getElementById('btnSaveRest'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                db.ref('restaurants').push().set({
+                    name, cuisine, foodType, pincode, 
+                    imageUrl: imgUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400',
+                    payMode, approved: true, avgRating: '4.5'
+                }).then(() => closeAModal());
+            });
+        }
+
+        // ==================== RESTAURANT DISHES / MENU LOGIC ====================
+        function openManageMenuModal(restId, restName) {
+            currentManagingRestId = restId;
+            document.getElementById('menuModalRestName').innerText = `${restName} - Dishes / मेन्यू`;
+            
+            // Clear input fields
+            document.getElementById('dishName').value = '';
+            document.getElementById('dishPrice').value = '';
+            document.getElementById('dishDelCharge').value = '';
+            document.getElementById('dishImgFile').value = '';
+            const btn = document.getElementById('btnSaveDish');
+            if (btn) { btn.innerText = "+ डिश मेन्यू में जोड़ें (Save Dish)"; btn.disabled = false; }
+
+            // Listen & Render Dishes for this Restaurant
+            const container = document.getElementById('rest-dishes-container');
+            container.innerHTML = '<p class="text-gray-400 text-center py-4">डिशेज लोड हो रही हैं...</p>';
+
+            db.ref(`menus/${restId}`).on('value', s => {
+                const dishes = s.val() || {};
+                container.innerHTML = '';
+                const keys = Object.keys(dishes);
+                if (!keys.length) {
+                    container.innerHTML = '<p class="text-gray-400 text-center py-4">इस रेस्टोरेंट में अभी कोई डिश नहीं जुड़ी है। ऊपर दिए गए फॉर्म से नई डिश जोड़ें।</p>';
+                    return;
+                }
+
+                keys.forEach(k => {
+                    const d = dishes[k];
+                    const isVeg = (d.foodType === 'veg');
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center bg-gray-50 p-2.5 rounded-2xl border border-gray-100">
+                            <div class="flex items-center gap-2.5">
+                                <img src="${d.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'}" class="w-12 h-12 rounded-xl object-cover border">
+                                <div>
+                                    <h5 class="font-extrabold text-xs text-gray-800">${isVeg ? '🟢' : '🔴'} ${d.name}</h5>
+                                    <span class="text-red-500 font-black text-xs">₹${d.price}</span>
+                                    ${d.deliveryCharge ? `<span class="text-[10px] text-gray-400 ml-1.5">(Pack: ₹${d.deliveryCharge})</span>` : ''}
+                                </div>
+                            </div>
+                            <button onclick="deleteDishItem('${currentManagingRestId}', '${k}')" class="text-red-500 font-bold bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg text-[11px] transition">
+                                Delete
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+
+            document.getElementById('manageMenuModal').classList.remove('hidden');
+        }
+
+        function saveRestaurantDish() {
+            if (!currentManagingRestId) return alert("रेस्टोरेंट आईडी नहीं मिली!");
+            const name = document.getElementById('dishName').value.trim();
+            const price = Number(document.getElementById('dishPrice').value);
+            const foodType = document.getElementById('dishFoodType').value;
+            const delCharge = Number(document.getElementById('dishDelCharge').value) || 0;
+            const payMode = document.getElementById('dishPayMode').value;
+            const file = document.getElementById('dishImgFile').files[0];
+
+            if (!name || !price) return alert("डिश का नाम और कीमत जरूरी हैं!");
+
+            const btn = document.getElementById('btnSaveDish');
+            btn.innerText = "डिश फोटो अपलोड व सेव हो रही है...";
+            btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                const dishKey = 'dish_' + Date.now();
+                db.ref(`menus/${currentManagingRestId}/${dishKey}`).set({
+                    id: dishKey,
+                    name: name,
+                    price: price,
+                    foodType: foodType,
+                    deliveryCharge: delCharge,
+                    payMode: payMode,
+                    available: true,
+                    img: imgUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200',
+                    createdAt: new Date().toISOString()
+                }).then(() => {
+                    alert("डिश सफलतापूर्वक जुड़ गई!");
+                    document.getElementById('dishName').value = '';
+                    document.getElementById('dishPrice').value = '';
+                    document.getElementById('dishDelCharge').value = '';
+                    document.getElementById('dishImgFile').value = '';
+                    btn.innerText = "+ डिश मेन्यू में जोड़ें (Save Dish)";
+                    btn.disabled = false;
+                }).catch(err => {
+                    alert("त्रुटि: " + err.message);
+                    btn.innerText = "+ डिश मेन्यू में जोड़ें (Save Dish)";
+                    btn.disabled = false;
+                });
+            });
+        }
+
+        function deleteDishItem(restId, dishKey) {
+            if (!confirm("क्या आप इस डिश को मेन्यू से हटाना चाहते हैं?")) return;
+            db.ref(`menus/${restId}/${dishKey}`).remove().then(() => alert("डिश हटा दी गई!"));
+        }
+
+        // ==================== 6. ANIMAL MARKET (ADD, EDIT, DELETE) ====================
+        db.ref('animals').on('value', s => {
+            allAnimalsData = s.val() || {}; 
+            const l = document.getElementById('admin-animals-list'); l.innerHTML = '';
+            cachedAnimalCats = [...new Set(Object.values(allAnimalsData).map(a => a.type).filter(Boolean))];
+            Object.keys(allAnimalsData).forEach(k => {
+                const an = allAnimalsData[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3 rounded-2xl border border-amber-100 flex justify-between items-center text-xs">
+                        <div class="flex gap-2.5 items-center">
+                            <img src="${an.img}" class="w-14 h-14 rounded-xl object-cover border">
+                            <div>
+                                <h4 class="font-extrabold">${an.title} (₹${an.price})</h4>
+                                <span class="text-amber-700 font-bold">${an.type}</span>
+                                <p class="text-gray-500">विक्रेता: ${an.seller} | Ph: ${an.phone}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="openAdminAnimalModal('${k}')" class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                            <button onclick="deleteItem('animals/${k}')" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        function openAdminAnimalModal(key = '') {
+            const an = key ? allAnimalsData[key] : null;
+            document.getElementById('aModalTitle').innerText = key ? "पशु एडिट करें (Admin)" : "पशु जोड़ें (Admin)";
+            const anOpts = cachedAnimalCats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="hidden" id="adAnEditKey" value="${key}">
+                <label class="block text-gray-500 font-bold">पशु श्रेणी (चुनें या नई टाइप करें):</label>
+                <select id="adAnTypeSelect" onchange="syncCategorySelect(this, 'adAnType')" class="w-full p-2 border rounded bg-white">
+                    <option value="">-- मौजूद श्रेणी चुनें --</option>
+                    ${anOpts}
+                    <option value="__NEW__">➕ नई श्रेणी टाइप करें</option>
+                </select>
+                <input type="text" id="adAnType" value="${an?an.type:''}" placeholder="श्रेणी लिखें" class="w-full p-2 border rounded mt-1 font-bold">
+                <input type="text" id="adAnTitle" value="${an?an.title:''}" placeholder="शीर्षक/नस्ल" class="w-full p-2 border rounded mt-1">
+                <input type="number" id="adAnPrice" value="${an?an.price:''}" placeholder="कीमत (₹)" class="w-full p-2 border rounded">
+                <input type="text" id="adAnDetails" value="${an?an.details:''}" placeholder="दूध क्षमता / विवरण" class="w-full p-2 border rounded">
+                <input type="text" id="adAnSeller" value="${an?an.seller:''}" placeholder="विक्रेता नाम" class="w-full p-2 border rounded">
+                <input type="number" id="adAnPhone" value="${an?an.phone:''}" placeholder="फोन नंबर" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="adAnImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveAnimal" onclick="saveAdminAnimal()" class="w-full bg-amber-600 text-white font-bold p-2 rounded mt-2">${key ? 'अपडेट करें' : 'सेव करें'}</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveAdminAnimal() {
+            const editKey = document.getElementById('adAnEditKey').value;
+            const type = document.getElementById('adAnType').value.trim();
+            const title = document.getElementById('adAnTitle').value.trim();
+            const price = document.getElementById('adAnPrice').value.trim();
+            const details = document.getElementById('adAnDetails').value.trim();
+            const seller = document.getElementById('adAnSeller').value.trim();
+            const phone = document.getElementById('adAnPhone').value.trim();
+            const file = document.getElementById('adAnImgFile').files[0];
+
+            if(!type || !title || !price || !phone) return alert("श्रेणी, नस्ल, कीमत और फोन नंबर भरें!");
+            const btn = document.getElementById('btnSaveAnimal'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            const existingImg = (editKey && allAnimalsData[editKey]) ? allAnimalsData[editKey].img : 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=300';
+
+            const proceed = (imgUrl) => {
+                const payload = { type, title, price, details, seller, phone, whatsapp: phone, img: imgUrl || existingImg, updatedAt: new Date().toISOString() };
+                if (editKey) {
+                    db.ref(`animals/${editKey}`).update(payload).then(() => closeAModal());
+                } else {
+                    payload.createdAt = new Date().toISOString();
+                    db.ref('animals').push().set(payload).then(() => closeAModal());
+                }
+            };
+
+            if (file) compressImage(file, img => proceed(img));
+            else proceed(null);
+        }
+
+        // ==================== 7. LOCAL SERVICES (ADD, EDIT, APPROVE, DELETE) ====================
+        db.ref('local_services/providers').on('value', s => {
+            allServicesData = s.val() || {}; 
+            const l = document.getElementById('admin-services-list'); l.innerHTML = '';
+            cachedSrvCats = [...new Set(Object.values(allServicesData).map(p => p.cat).filter(Boolean))];
+            Object.keys(allServicesData).forEach(k => {
+                const p = allServicesData[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+                        <div class="flex gap-2.5 items-center">
+                            <img src="${p.img||'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="w-12 h-12 rounded-full border">
+                            <div><h4 class="font-bold">${p.name} (${p.cat})</h4><p class="text-gray-500">${p.phone} | Status: ${p.status}</p></div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="openAdminServiceModal('${k}')" class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                            ${p.status==='pending' ? `<button onclick="db.ref('local_services/providers/${k}').update({status:'approved'})" class="bg-green-600 text-white px-2 py-1 rounded font-bold">Approve</button>` : ''}
+                            <button onclick="deleteItem('local_services/providers/${k}')" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        function openAdminServiceModal(key = '') {
+            const srv = key ? allServicesData[key] : null;
+            document.getElementById('aModalTitle').innerText = key ? "Edit Service Provider" : "Add Service Provider";
+            const srvOpts = cachedSrvCats.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="hidden" id="adSrvEditKey" value="${key}">
+                <input type="text" id="adSrvName" value="${srv?srv.name:''}" placeholder="प्रदाता का नाम / बिज़नेस नाम" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">सर्विस कैटेगरी (चुनें या नई टाइप करें):</label>
+                <select id="adSrvCatSelect" onchange="syncCategorySelect(this, 'adSrvCat')" class="w-full p-2 border rounded bg-white">
+                    <option value="">-- मौजूद कैटेगरी चुनें --</option>
+                    ${srvOpts}
+                    <option value="__NEW__">➕ नई कैटेगरी टाइप करें</option>
+                </select>
+                <input type="text" id="adSrvCat" value="${srv?srv.cat:''}" placeholder="कैटेगरी (उदा. Plumber, Electrician...)" class="w-full p-2 border rounded mt-1">
+                <textarea id="adSrvDesc" placeholder="सर्विस विवरण..." class="w-full p-2 border rounded h-16 mt-1">${srv?srv.desc:''}</textarea>
+                <input type="number" id="adSrvPhone" value="${srv?srv.phone:''}" placeholder="Calling Phone Number" class="w-full p-2 border rounded">
+                <input type="number" id="adSrvWa" value="${srv?(srv.whatsapp||srv.phone):''}" placeholder="WhatsApp Number" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="adSrvImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveSrv" onclick="saveAdminService()" class="w-full bg-emerald-600 text-white font-bold p-2.5 rounded mt-2">${key ? 'अपडेट करें' : 'सेव करें'}</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveAdminService() {
+            const editKey = document.getElementById('adSrvEditKey').value;
+            const name = document.getElementById('adSrvName').value.trim();
+            const cat = document.getElementById('adSrvCat').value.trim();
+            const desc = document.getElementById('adSrvDesc').value.trim();
+            const phone = document.getElementById('adSrvPhone').value.trim();
+            const wa = document.getElementById('adSrvWa').value.trim();
+            const file = document.getElementById('adSrvImgFile').files[0];
+
+            if(!name || !cat || !phone) return alert("नाम, कैटेगरी और फोन नंबर अनिवार्य हैं!");
+            const btn = document.getElementById('btnSaveSrv'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            const existingImg = (editKey && allServicesData[editKey]) ? allServicesData[editKey].img : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+            const proceed = (imgUrl) => {
+                const payload = { name, cat, desc, phone, whatsapp: wa || phone, img: imgUrl || existingImg, status: 'approved', updatedAt: new Date().toISOString() };
+                if (editKey) {
+                    db.ref(`local_services/providers/${editKey}`).update(payload).then(() => closeAModal());
+                } else {
+                    payload.uid = 'admin_created';
+                    db.ref('local_services/providers').push().set(payload).then(() => closeAModal());
+                }
+            };
+
+            if (file) compressImage(file, img => proceed(img));
+            else proceed(null);
+        }
+
+        // ==================== 8. TEACHERS (ADD, EDIT, DELETE) ====================
+        db.ref('ladnun_teachers').on('value', s => {
+            allTeachersData = s.val() || {}; 
+            const l = document.getElementById('admin-teachers-list'); l.innerHTML = '';
+            cachedTeacherSubs = [...new Set(Object.values(allTeachersData).map(t => t.subject).filter(Boolean))];
+            Object.keys(allTeachersData).forEach(k => {
+                const t = allTeachersData[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+                        <div class="flex gap-2.5 items-center">
+                            <img src="${t.img||'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="w-12 h-12 rounded-xl object-cover border">
+                            <div><h4 class="font-bold">${t.name} (${t.subject})</h4><p class="text-gray-500">${t.phone} | Status: ${t.availability}</p></div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="openAdminTeacherModal('${k}')" class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                            <button onclick="deleteItem('ladnun_teachers/${k}')" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        function openAdminTeacherModal(key = '') {
+            const t = key ? allTeachersData[key] : null;
+            document.getElementById('aModalTitle').innerText = key ? "Edit Teacher (शिक्षक एडिट करें)" : "Add Teacher (शिक्षक जोड़ें)";
+            const subOpts = cachedTeacherSubs.map(s => `<option value="${s}">${s}</option>`).join('');
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="hidden" id="adTEditKey" value="${key}">
+                <input type="text" id="adTName" value="${t?t.name:''}" placeholder="शिक्षक का नाम" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">विषय (चुनें या नया टाइप करें):</label>
+                <select id="adTSubSelect" onchange="syncCategorySelect(this, 'adTSubject')" class="w-full p-2 border rounded bg-white">
+                    <option value="">-- मौजूद विषय चुनें --</option>
+                    ${subOpts}
+                    <option value="__NEW__">➕ नया विषय टाइप करें</option>
+                </select>
+                <input type="text" id="adTSubject" value="${t?t.subject:''}" placeholder="विषय लिखे" class="w-full p-2 border rounded font-bold mt-1">
+                <input type="text" id="adTExp" value="${t?t.experience:''}" placeholder="अनुभव (उदा. 5 Years Exp)" class="w-full p-2 border rounded mt-1">
+                <textarea id="adTDesc" placeholder="योग्यता व विवरण..." class="w-full p-2 border rounded h-16">${t?t.desc:''}</textarea>
+                <input type="number" id="adTPhone" value="${t?t.phone:''}" placeholder="Phone Number" class="w-full p-2 border rounded">
+                <input type="number" id="adTWa" value="${t?(t.whatsapp||t.phone):''}" placeholder="WhatsApp Number" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">उपलब्धता स्थिति (Status):</label>
+                <select id="adTAvail" class="w-full p-2 border rounded">
+                    <option value="free" ${t&&t.availability==='free'?'selected':''}>🟢 FREE (उपलब्ध हैं)</option>
+                    <option value="busy" ${t&&t.availability==='busy'?'selected':''}>🔴 BUSY (कहीं कार्यरत हैं)</option>
+                </select>
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="adTImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveTeacher" onclick="saveAdminTeacher()" class="w-full bg-indigo-600 text-white font-bold p-2.5 rounded mt-2">${key ? 'अपडेट करें' : 'सेव करें'}</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveAdminTeacher() {
+            const editKey = document.getElementById('adTEditKey').value;
+            const name = document.getElementById('adTName').value.trim();
+            const subject = document.getElementById('adTSubject').value.trim();
+            const exp = document.getElementById('adTExp').value.trim();
+            const desc = document.getElementById('adTDesc').value.trim();
+            const phone = document.getElementById('adTPhone').value.trim();
+            const wa = document.getElementById('adTWa').value.trim();
+            const avail = document.getElementById('adTAvail').value;
+            const file = document.getElementById('adTImgFile').files[0];
+
+            if(!name || !subject || !phone) return alert("नाम, विषय और फोन नंबर भरें!");
+            const btn = document.getElementById('btnSaveTeacher'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            const existingImg = (editKey && allTeachersData[editKey]) ? allTeachersData[editKey].img : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+
+            const proceed = (imgUrl) => {
+                const payload = { name, subject, experience: exp, desc, phone, whatsapp: wa || phone, availability: avail, img: imgUrl || existingImg, updatedAt: new Date().toISOString() };
+                if (editKey) {
+                    db.ref(`ladnun_teachers/${editKey}`).update(payload).then(() => closeAModal());
+                } else {
+                    payload.uid = 'admin_created';
+                    db.ref('ladnun_teachers').push().set(payload).then(() => closeAModal());
+                }
+            };
+
+            if (file) compressImage(file, img => proceed(img));
+            else proceed(null);
+        }
+
+        // ==================== 9. SCHOOL VACANCIES (ADD, EDIT, DELETE) ====================
+        db.ref('school_vacancies').on('value', s => {
+            allVacanciesData = s.val() || {}; 
+            const l = document.getElementById('admin-vacancies-list'); l.innerHTML = '';
+            Object.keys(allVacanciesData).forEach(k => {
+                const v = allVacanciesData[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+                        <div><h4 class="font-bold">${v.schoolName}</h4><p class="text-gray-500">विषय: ${v.subject} | Ph: ${v.phone}</p></div>
+                        <div class="flex gap-1.5">
+                            <button onclick="openAdminVacancyModal('${k}')" class="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                            <button onclick="deleteItem('school_vacancies/${k}')" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        function openAdminVacancyModal(key = '') {
+            const v = key ? allVacanciesData[key] : null;
+            document.getElementById('aModalTitle').innerText = key ? "Edit School Requirement" : "Add School Requirement";
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="hidden" id="adSchEditKey" value="${key}">
+                <input type="text" id="adSchName" value="${v?v.schoolName:''}" placeholder="स्कूल/कोचिंग का नाम" class="w-full p-2 border rounded">
+                <input type="text" id="adSchSubject" value="${v?v.subject:''}" placeholder="आवश्यक विषय (उदा. Maths 10th)" class="w-full p-2 border rounded">
+                <input type="text" id="adSchSalary" value="${v?v.salary:''}" placeholder="सैलरी / मानदेय (उदा. 15,000)" class="w-full p-2 border rounded">
+                <input type="number" id="adSchPhone" value="${v?v.phone:''}" placeholder="संपर्क नंबर (Phone)" class="w-full p-2 border rounded">
+                <input type="number" id="adSchWa" value="${v?(v.whatsapp||v.phone):''}" placeholder="WhatsApp Number" class="w-full p-2 border rounded">
+                <textarea id="adSchDetails" placeholder="विवरण व शर्तें..." class="w-full p-2 border rounded h-16">${v?v.details:''}</textarea>
+                <button onclick="saveAdminVacancy()" class="w-full bg-purple-600 text-white font-bold p-2.5 rounded mt-2">${key ? 'अपडेट करें' : 'वैकेंसी सेव करें'}</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveAdminVacancy() {
+            const editKey = document.getElementById('adSchEditKey').value;
+            const schoolName = document.getElementById('adSchName').value.trim();
+            const subject = document.getElementById('adSchSubject').value.trim();
+            const salary = document.getElementById('adSchSalary').value.trim();
+            const phone = document.getElementById('adSchPhone').value.trim();
+            const wa = document.getElementById('adSchWa').value.trim();
+            const details = document.getElementById('adSchDetails').value.trim();
+
+            if(!schoolName || !subject || !phone) return alert("स्कूल का नाम, विषय और फोन नंबर भरें!");
+
+            const payload = { schoolName, subject, salary, phone, whatsapp: wa || phone, details, updatedAt: new Date().toISOString() };
+            if (editKey) {
+                db.ref(`school_vacancies/${editKey}`).update(payload).then(() => closeAModal());
+            } else {
+                payload.uid = 'admin_created';
+                db.ref('school_vacancies').push().set(payload).then(() => closeAModal());
+            }
+        }
+
+        // ==================== 10. DIRECTORY & OFFICIALS ====================
+        db.ref('ladnun_officials').on('value', s => {
+            const data = s.val() || {}; const l = document.getElementById('admin-officials-list'); l.innerHTML = '';
+            Object.keys(data).forEach(k => {
+                const o = data[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+                        <div class="flex gap-2.5 items-center">
+                            <img src="${o.img}" class="w-10 h-10 rounded-full object-cover border">
+                            <div><h4 class="font-bold">${o.name}</h4><p class="text-blue-600">${o.designation} (${o.phone})</p></div>
+                        </div>
+                        <button onclick="deleteItem('ladnun_officials/${k}')" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                    </div>
+                `;
+            });
+        });
+        function openOffModal() {
+            document.getElementById('aModalTitle').innerText = "Add Govt Official";
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="text" id="ofName" placeholder="Name" class="w-full p-2 border rounded">
+                <input type="text" id="ofDesig" placeholder="Designation" class="w-full p-2 border rounded">
+                <input type="number" id="ofPhone" placeholder="Phone" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="ofImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveOff" onclick="saveOfficial()" class="w-full bg-blue-700 text-white font-bold p-2 rounded mt-2">Save Official</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveOfficial() {
+            const name = document.getElementById('ofName').value.trim();
+            const designation = document.getElementById('ofDesig').value.trim();
+            const phone = document.getElementById('ofPhone').value.trim();
+            const file = document.getElementById('ofImgFile').files[0];
+
+            if(!name || !designation || !phone) return alert("नाम, पद व फोन नंबर भरें!");
+            const btn = document.getElementById('btnSaveOff'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                db.ref('ladnun_officials').push().set({
+                    name, designation, phone, whatsapp: phone, 
+                    img: imgUrl || 'https://cdn-icons-png.flaticon.com/512/9131/9131529.png'
+                }).then(() => closeAModal());
+            });
+        }
+
+        db.ref('ladnun_ward_members').on('value', s => {
+            const data = s.val() || {}; const l = document.getElementById('admin-ward-list'); l.innerHTML = '';
+            Object.keys(data).forEach(k => {
+                const m = data[k];
+                l.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border flex justify-between items-center">
+                        <div class="flex gap-2.5 items-center">
+                            <img src="${m.img||'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="w-10 h-10 rounded-full object-cover border">
+                            <div><h4 class="font-bold">${m.name}</h4><p class="text-gray-500">Ward: ${m.wardNo} (${m.phone})</p></div>
+                        </div>
+                        <button onclick="deleteItem('ladnun_ward_members/${k}')" class="text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                    </div>
+                `;
+            });
+        });
+        function openWardModal() {
+            document.getElementById('aModalTitle').innerText = "Add Ward Member";
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="text" id="wmName" placeholder="Member Name" class="w-full p-2 border rounded">
+                <input type="number" id="wmNo" placeholder="Ward Number (1-45)" class="w-full p-2 border rounded">
+                <input type="text" id="wmRole" placeholder="Role (Ward Parshad)" class="w-full p-2 border rounded">
+                <input type="number" id="wmPhone" placeholder="Phone" class="w-full p-2 border rounded">
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="wmImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveWard" onclick="saveWard()" class="w-full bg-emerald-600 text-white font-bold p-2.5 rounded mt-2">Save Member</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveWard() {
+            const name = document.getElementById('wmName').value.trim();
+            const wardNo = document.getElementById('wmNo').value.trim();
+            const role = document.getElementById('wmRole').value.trim();
+            const phone = document.getElementById('wmPhone').value.trim();
+            const file = document.getElementById('wmImgFile').files[0];
+
+            if(!name || !wardNo || !phone) return alert("नाम, वार्ड नंबर व फोन नंबर भरें!");
+            const btn = document.getElementById('btnSaveWard'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                db.ref('ladnun_ward_members').push().set({
+                    name, wardNo, role, phone, whatsapp: phone,
+                    img: imgUrl || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+                }).then(() => closeAModal());
+            });
+        }
+
+        // ==================== 11. BOOKS STORE (SELECT OR TYPE CLASS) ====================
+        db.ref('books/items').on('value', s => {
+            const data = s.val() || {}; const l = document.getElementById('admin-books-list'); l.innerHTML = '';
+            cachedBookClasses = [...new Set(Object.values(data).map(b => b.classCat).filter(Boolean))];
+            Object.keys(data).forEach(k => {
+                const b = data[k];
+                l.innerHTML += `
+                    <div class="bg-white p-2.5 rounded-xl border text-xs flex flex-col justify-between">
+                        <img src="${b.img}" class="h-20 w-full object-contain mb-1 rounded-lg">
+                        <h4 class="font-bold truncate">${b.title}</h4>
+                        <span class="text-blue-600 font-black">₹${b.price} (${b.classCat || 'General'})</span>
+                        <span class="text-[9px] font-bold text-gray-500">Pay: ${b.payMode||'BOTH'}</span>
+                        <button onclick="deleteItem('books/items/${k}')" class="mt-2 text-red-500 bg-red-50 py-1 rounded font-bold">Delete</button>
+                    </div>
+                `;
+            });
+        });
+        function openBookModal() {
+            document.getElementById('aModalTitle').innerText = "Add Book (कक्षा चुनें या लिखें)";
+            const classOpts = cachedBookClasses.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('aModalBody').innerHTML = `
+                <input type="text" id="bTitle" placeholder="Book Title" class="w-full p-2 border rounded">
+                <select id="bMed" class="w-full p-2 border rounded"><option value="Hindi">Hindi Medium</option><option value="English">English Medium</option></select>
+                <label class="block text-gray-500 font-bold mt-1">कक्षा (चुनें या नई टाइप करें):</label>
+                <select id="bClassSelect" onchange="syncCategorySelect(this, 'bClass')" class="w-full p-2 border rounded bg-white">
+                    <option value="">-- मौजूद कक्षा चुनें --</option>
+                    ${classOpts}
+                    <option value="__NEW__">➕ नई कक्षा टाइप करें</option>
+                </select>
+                <input type="text" id="bClass" placeholder="कक्षा लिखें (उदा. Class 1, Class 10...)" class="w-full p-2 border rounded mt-1">
+                <input type="number" id="bPrice" placeholder="Price (₹)" class="w-full p-2 border rounded mt-1">
+                <label class="block text-gray-500 font-bold mt-1">Payment Options:</label>
+                <select id="bPayMode" class="w-full p-2 border rounded">
+                    <option value="BOTH">COD + Online Payment Both</option>
+                    <option value="COD">Only Cash on Delivery</option>
+                    <option value="ONLINE">Only Online Payment</option>
+                </select>
+                <label class="block text-gray-500 font-bold mt-1">गैलरी से फोटो चुनें:</label>
+                <input type="file" id="bImgFile" accept="image/*" class="w-full border p-1 rounded bg-gray-50">
+                <button id="btnSaveBook" onclick="saveBook()" class="w-full bg-blue-600 text-white font-bold p-2 rounded mt-2">Save Book</button>
+            `;
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function saveBook() {
+            const title = document.getElementById('bTitle').value.trim();
+            const medium = document.getElementById('bMed').value;
+            const classCat = document.getElementById('bClass').value.trim() || 'General';
+            const price = Number(document.getElementById('bPrice').value);
+            const payMode = document.getElementById('bPayMode').value;
+            const file = document.getElementById('bImgFile').files[0];
+
+            if(!title || !price) return alert("किताब का नाम और कीमत भरें!");
+            const btn = document.getElementById('btnSaveBook'); btn.innerText = "सेव हो रहा है..."; btn.disabled = true;
+
+            compressImage(file, imgUrl => {
+                const id = 'b_' + Date.now();
+                db.ref(`books/items/${id}`).set({ 
+                    id, title, medium, classCat, price, 
+                    img: imgUrl || 'https://via.placeholder.com/150',
+                    payMode, deliveryCharge: 20 
+                }).then(() => closeAModal());
+            });
+        }
+    </script>
+</body>
+</html>
